@@ -9,6 +9,7 @@
 
 #include <random>
 
+#include "points-state.hpp"
 #include "vec2d.hpp"
 
 namespace dragon8
@@ -20,6 +21,7 @@ class Shape
 {
 public:
 	virtual vec2d gen_point(RGen& rgen) const = 0;
+	virtual PointsState gen_state(const uint32_t n, RGen& rgen) const;
 	virtual vec2d bound(const vec2d vfrom, const vec2d vto) const = 0;
 	// TODO: add some draw method here
 };

@@ -18,11 +18,10 @@ namespace dragon8
 
 class Solver
 {
-private:
-	uint32_t n;
-	std::shared_ptr<Shape> shape;
-
 protected:
+	std::shared_ptr<Shape> shape;
+	uint32_t n;
+	
 	Solver(const std::shared_ptr<Shape> shape, const uint32_t n);
 
 public:

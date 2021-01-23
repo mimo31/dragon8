@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
 	main.cpp
 	shape.cpp
 	solver.cpp
+	vec2d.cpp
 )
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
