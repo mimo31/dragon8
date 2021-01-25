@@ -30,8 +30,8 @@ PointsState DistInvSolver::solve() const
 
 	vec2d *fvec = new vec2d[n];
 
-	constexpr uint32_t iters = 10000;
-	constexpr double lm = .0001;
+	constexpr uint32_t iters = 3000;
+	constexpr double lm = .01;
 
 	for (uint32_t i = 0; i < iters; i++)
 	{

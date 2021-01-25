@@ -10,6 +10,8 @@
 #include <cmath>
 #include <ostream>
 
+#include "point.hpp"
+
 namespace dragon8
 {
 
@@ -21,11 +23,13 @@ struct vec2d
 	double x;
 	double y;
 
-	vec2d()
+	vec2d() = default;
+
+	constexpr vec2d(const double x, const double y) : x(x), y(y)
 	{
 	}
 
-	constexpr vec2d(const double x, const double y) : x(x), y(y)
+	vec2d(const point p) : x(p.x), y(p.y)
 	{
 	}
 
@@ -42,6 +46,11 @@ struct vec2d
 	vec2d get_unit() const
 	{
 		return *this / this->len();
+	}
+
+	bool operator==(const vec2d &other) const
+	{
+		return x == other.x && y == other.y;
 	}
 
 	vec2d &operator+=(const vec2d &other)
@@ -83,6 +92,11 @@ struct vec2d
 		return x * other.x + y * other.y;
 	}
 
+	double cross(const vec2d &other) const
+	{
+		return x * other.y - y * other.x;
+	}
+
 	bool is_zero() const
 	{
 		return x == 0 && y == 0;
@@ -91,6 +105,11 @@ struct vec2d
 	bool inside(const double x0, const double y0, const double x1, const double y1) const
 	{
 		return x0 <= x && x <= x1 && y0 <= y && y <= y1;
+	}
+
+	point get_rounded() const
+	{
+		return point(round(x), round(y));
 	}
 };
 

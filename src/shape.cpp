@@ -48,4 +48,50 @@ vec2d ShapeCircle::bound(const vec2d vfrom, const vec2d vto) const
 	return vfrom + vmove * t;*/
 }
 
+rectangle2d ShapeCircle::get_box() const
+{
+	return rectangle2d(-r, -r, r, r);
+}
+
+Rescaling ShapeCircle::draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const
+{
+	const vec2d center = (vec2d(box.c0) + vec2d(box.c1)) / 2;
+	const double rad = std::min(box.get_width(), box.get_height()) / 2;
+
+	const point ccoors = center.get_rounded();
+	const unsigned char white[] = { 255, 255, 255 };
+	img.draw_circle(ccoors.x, ccoors.y, round(rad), white, 1.0);
+
+	const double sc = rad / r;
+	return Rescaling(center, sc, sc);
+}
+
+ShapePolygon::ShapePolygon(const std::vector<vec2d>& verts) : verts(verts)
+{
+}
+
+vec2d ShapePolygon::gen_point(RGen& rgen) const
+{
+	// TODO: implement
+	return vec2d();
+}
+
+vec2d ShapePolygon::bound(const vec2d vfrom, const vec2d vto) const
+{
+	// TODO: implement
+	return vec2d();
+}
+
+rectangle2d ShapePolygon::get_box() const
+{
+	// TODO: implement
+	return rectangle2d(0, 0, 0, 0);
+}
+
+Rescaling ShapePolygon::draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const
+{
+	// TODO: implement
+	return Rescaling(vec2d(), 0, 0);
+}
+
 }

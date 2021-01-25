@@ -7,9 +7,15 @@
 #ifndef SHAPE_HPP
 #define SHAPE_HPP
 
+#include <memory>
 #include <random>
 
+#include "CImg.h"
+
 #include "points-state.hpp"
+#include "rectangle2d.hpp"
+#include "rectangle2i.hpp"
+#include "rescaling.hpp"
 #include "vec2d.hpp"
 
 namespace dragon8
@@ -21,10 +27,13 @@ class Shape
 {
 public:
 	virtual vec2d gen_point(RGen& rgen) const = 0;
-	virtual PointsState gen_state(const uint32_t n, RGen& rgen) const;
+	PointsState gen_state(const uint32_t n, RGen& rgen) const;
 	virtual vec2d bound(const vec2d vfrom, const vec2d vto) const = 0;
-	// TODO: add some draw method here
+	virtual rectangle2d get_box() const = 0;
+	virtual Rescaling draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const = 0; // a transformation of internal coordinates to image coordinates
 };
+
+typedef std::shared_ptr<Shape> ShapePtr;
 
 class ShapeCircle : public Shape
 {
@@ -36,6 +45,8 @@ public:
 
 	vec2d gen_point(RGen& rgen) const override;
 	vec2d bound(const vec2d vfrom, const vec2d vto) const override;
+	rectangle2d get_box() const override;
+	Rescaling draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const override;
 };
 
 class ShapePolygon : public Shape
@@ -48,6 +59,8 @@ public:
 
 	vec2d gen_point(RGen& rgen) const override;
 	vec2d bound(const vec2d vfrom, const vec2d vto) const override;
+	rectangle2d get_box() const override;
+	Rescaling draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const override;
 };
 
 }

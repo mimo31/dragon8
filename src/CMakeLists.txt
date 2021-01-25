@@ -6,10 +6,14 @@ add_executable(${PROJECT_NAME}
 	application.cpp
 	dist-inv-solver.cpp
 	evaluator.cpp
+	graphics.cpp
 	main.cpp
+	rescaling.cpp
 	shape.cpp
 	solver.cpp
 	vec2d.cpp
 )
+
+target_link_libraries(${PROJECT_NAME} -pthread -lX11)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
