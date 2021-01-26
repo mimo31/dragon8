@@ -18,6 +18,8 @@ public:
 	vec2d origin;
 	double sx, sy;
 
+	Rescaling() = default;
+
 	Rescaling(const vec2d origin, const double sx, const double sy);
 
 	vec2d map(const vec2d v) const;

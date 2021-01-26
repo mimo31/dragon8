@@ -21,6 +21,8 @@
 namespace dragon8
 {
 
+bool intersects(const vec2d v0, const vec2d v1, const vec2d w0, const vec2d w1);
+
 typedef std::mt19937 RGen;
 
 class Shape
@@ -53,6 +55,8 @@ class ShapePolygon : public Shape
 {
 private:
 	std::vector<vec2d> verts;
+
+	bool is_inside(const vec2d p) const;
 
 public:
 	ShapePolygon(const std::vector<vec2d>& verts);

@@ -25,6 +25,16 @@ struct rectangle2d
 	{
 	}
 
+	double get_width() const
+	{
+		return c1.x - c0.x;
+	}
+
+	double get_height() const
+	{
+		return c1.y - c0.y;
+	}
+
 };
 
 }

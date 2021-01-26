@@ -48,6 +48,11 @@ struct vec2d
 		return *this / this->len();
 	}
 
+	vec2d get_lrot() const
+	{
+		return vec2d(-y, x);
+	}
+
 	bool operator==(const vec2d &other) const
 	{
 		return x == other.x && y == other.y;
@@ -85,6 +90,11 @@ struct vec2d
 	vec2d operator/(const double a) const
 	{
 		return vec2d(x / a, y / a);
+	}
+
+	vec2d operator-() const
+	{
+		return vec2d(-x, -y);
 	}
 
 	double dot(const vec2d &other) const

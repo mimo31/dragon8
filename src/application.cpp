@@ -83,31 +83,11 @@ std::string getln(std::istream& is)
 	return ln;
 }
 
-bool intersects(const vec2d v0, const vec2d v1, const vec2d w0, const vec2d w1)
-{
-	const vec2d v = v1 - v0, w = w1 - v0;
-	const vec2d w0v = w0 - v0, w1v = w1 - v0;
-	if (v.cross(w) == 0 && v.cross(w0 - v0) == 0)
-	{
-		const double v1d = v.dot(v), w0d = v.dot(w0v), w1d = v.dot(w1v);
-		const double wdfrom = std::min(w0d, w1d), wdto = std::max(w0d, w1d);
-		return wdfrom <= v1d && 0 <= wdto;
-	}
-	const double w0c = v.cross(w0v), w1c = v.cross(w1v);
-	if ((w0c > 0 && w1c > 0) || (w0c < 0 && w1c < 0))
-		return false;
-	const vec2d v0w = v0 - w0, v1w = v1 - w0;
-	const double v0c = w.cross(v0w), v1c = v.cross(v1w);
-	if ((v0c > 0 && v1c > 0) || (v0c < 0 && v1c < 0))
-		return false;
-	return true;
-}
-
 bool vertices_distinct(std::vector<vec2d>& verts)
 {
 	for (uint32_t i = 0; i < verts.size(); i++)
 	{
-		for (uint32_t j = i; j < verts.size(); j++)
+		for (uint32_t j = i + 1; j < verts.size(); j++)
 		{
 			if (verts[i] == verts[j])
 				return false;
@@ -241,7 +221,7 @@ void Application::read_shape(std::istream& is, std::ostream& os)
 			while (true)
 			{
 				const bool point_required = points.size() <= 2;
-				const str note = point_required ? " or leave blank to finish" : "";
+				const str note = point_required ? "" : " or leave blank to finish";
 				os << "Enter the coorindates (format \"x y\") of vertex " << points.size() + 1 << note << "." << endl;
 				const str ln = getln(is);
 				if (ln.length() == 0 && !point_required)
@@ -255,23 +235,23 @@ void Application::read_shape(std::istream& is, std::ostream& os)
 				else
 				{
 					points.push_back(vec2d(x, y));
-					if (!has_no_intersections_open(points))
+					/*if (!has_no_intersections_open(points))
 					{
 						os << "Your polygon was intersecting itself. Starting over." << endl;
 						points.clear();
 						break;
-					}
+					}*/
 				}
 			}
 			if (points.size() != 0)
 			{
-				if (has_no_intersections_closing(points))
-				{
+				//if (has_no_intersections_closing(points))
+				//{
 					shape = std::make_shared<ShapePolygon>(points);
 					break;
-				}
-				else
-					os << "Your polygon was intersecting itself. Starting over." << endl;
+				//}
+				//else
+				//	os << "Your polygon was intersecting itself. Starting over." << endl;
 			}
 		}
 	}
