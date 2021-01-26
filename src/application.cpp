@@ -11,6 +11,7 @@
 #include <sstream>
 
 #include "dist-inv-solver.hpp"
+#include "evaluator.hpp"
 #include "graphics.hpp"
 #include "points-state.hpp"
 
@@ -24,7 +25,11 @@ void Application::run()
 
 	read_input(std::cin, std::cout);
 
+	std::cout.precision(15);
+
 	const PointsState ps = DistInvSolver(shape, n).solve();
+
+	std::cout << "score = " << DistInvEvaluator().evalv(ps) << std::endl;
 
 	if (print_coors)
 	{

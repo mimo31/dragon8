@@ -15,19 +15,20 @@ namespace dragon8
 class Evaluator
 {
 public:
-	virtual double eval(const PointsState&) const = 0;
+	virtual double eval(const vec2d *const ar, const uint32_t n) const = 0;
+	double evalv(const PointsState&) const;
 };
 
 class DistInvEvaluator : public Evaluator
 {
 public:
-	double eval(const PointsState&) const override;
+	double eval(const vec2d *const ar, const uint32_t n) const override;
 };
 
 class MinDistEvaluator : public Evaluator
 {
 public:
-	double eval(const PointsState&) const override;
+	double eval(const vec2d *const ar, const uint32_t n) const override;
 };
 
 }
