@@ -29,6 +29,8 @@ public:
 	
 };
 
+typedef std::unique_ptr<Solver> SolverUPtr;
+
 }
 
 

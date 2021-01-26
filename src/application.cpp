@@ -13,6 +13,7 @@
 #include "dist-inv-solver.hpp"
 #include "evaluator.hpp"
 #include "graphics.hpp"
+#include "min-dist-solver.hpp"
 #include "points-state.hpp"
 
 namespace dragon8
@@ -27,9 +28,10 @@ void Application::run()
 
 	std::cout.precision(15);
 
-	const PointsState ps = DistInvSolver(shape, n).solve();
+	const PointsState ps = opt_type == OptimalizationType::MIN_DIST_INV ? DistInvSolver(shape, n).solve() : MinDistSolver(shape, n).solve();
+	const double score = opt_type == OptimalizationType::MIN_DIST_INV ? DistInvEvaluator().evalv(ps) : MinDistEvaluator().evalv(ps);
 
-	std::cout << "score = " << DistInvEvaluator().evalv(ps) << std::endl;
+	std::cout << "score = " << score << std::endl;
 
 	if (print_coors)
 	{

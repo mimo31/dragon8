@@ -153,7 +153,7 @@ bool ShapePolygon::is_inside(const vec2d p) const
 vec2d ShapePolygon::gen_point(RGen& rgen) const
 {
 	const rectangle2d box = get_box();
-	std::uniform_real_distribution<> xdist(box.c0.x, box.c1.y);
+	std::uniform_real_distribution<> xdist(box.c0.x, box.c1.x);
 	std::uniform_real_distribution<> ydist(box.c0.y, box.c1.y);
 	vec2d p;
 	do

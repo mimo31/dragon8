@@ -8,6 +8,7 @@ add_executable(${PROJECT_NAME}
 	evaluator.cpp
 	graphics.cpp
 	main.cpp
+	min-dist-solver.cpp
 	rescaling.cpp
 	shape.cpp
 	solver.cpp
