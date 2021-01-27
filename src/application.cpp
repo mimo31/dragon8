@@ -21,9 +21,6 @@ namespace dragon8
 
 void Application::run()
 {
-	//const ShapePtr shape = std::make_shared<ShapeCircle>(1);
-	//const uint32_t n = 10000;
-
 	read_input(std::cin, std::cout);
 
 	std::cout.precision(15);
@@ -46,11 +43,6 @@ void Application::run()
 	if (generate_image)
 		write_image(shape, ps, "out.png");
 }
-
-enum NumberParseResult
-{
-	OK, TOO_BIG, SYNTAX_ERROR
-};
 
 NumberParseResult to_nneg_int(const std::string& s, uint32_t& val)
 {
@@ -85,43 +77,15 @@ std::string getln(std::istream& is)
 	return ln;
 }
 
-bool vertices_distinct(std::vector<vec2d>& verts)
+bool has_interior(const std::vector<vec2d>& verts)
 {
-	for (uint32_t i = 0; i < verts.size(); i++)
-	{
-		for (uint32_t j = i + 1; j < verts.size(); j++)
-		{
-			if (verts[i] == verts[j])
-				return false;
-		}
-	}
-	return true;
-}
-
-bool has_no_intersections_open(std::vector<vec2d>& verts)
-{
-	if (!vertices_distinct(verts))
+	if (verts.size() < 3)
 		return false;
-	for (uint32_t i = 0; i < verts.size() - 1; i++)
-	{
-		for (uint32_t j = i + 1; j < verts.size() - 1; j++)
-		{
-			if (intersects(verts[i], verts[i + 1], verts[j], verts[j + 1]))
-				return false;
-		}
-	}
-	return true;
-}
-
-bool has_no_intersections_closing(std::vector<vec2d>& verts)
-{
-	const vec2d v0 = verts[0], v1 = verts[verts.size() - 1];
-	for (uint32_t i =  0; i < verts.size() - 1; i++)
-	{
-		if (intersects(v0, v1, verts[i], verts[i + 1]))
-			return false;
-	}
-	return true;
+	const uint32_t n = verts.size();
+	double area = (verts[0].x - verts[n - 1].x) * (verts[0].y + verts[n - 1].y);
+	for (uint32_t i = 0; i < n - 1; i++)
+		area += (verts[i + 1].x - verts[i].x) * (verts[i + 1].y + verts[i].y);
+	return area != 0;
 }
 
 using std::endl;
@@ -164,34 +128,94 @@ void Application::read_n(std::istream& is, std::ostream& os)
 	}
 }
 
+struct ShapePreset
+{
+	str name;
+	ShapePtr shape;
+
+	ShapePreset(const str name, const ShapePtr shape)
+		: name(name), shape(shape)
+	{
+	}
+};
+
+std::vector<vec2d> generate_regular_ngon_verts(const uint32_t n)
+{
+	std::vector<vec2d> verts;
+	for (uint32_t i = 0; i < n; i++)
+		verts.push_back(vec2d(sin(i * 2 * M_PI / n), cos(i * 2 * M_PI / n)));
+	return verts;
+}
+
+std::vector<vec2d> generate_comb_verts()
+{
+	std::vector<vec2d> verts;
+	constexpr uint32_t points = 20;
+	for (uint32_t i = 0; i < points; i++)
+	{
+		verts.push_back(vec2d(i / double(points), .1));
+		verts.push_back(vec2d((i + .5) / double(points), .9));
+	}
+	verts.push_back(vec2d(1, .1));
+	verts.push_back(vec2d(1, 0));
+	verts.push_back(vec2d(0, 0));
+	return verts;
+}
+
+const uint32_t preset_count = 10;
+const ShapePreset shape_presets[preset_count] = 
+{
+	ShapePreset("unit circle (r = 1)", std::make_shared<ShapeCircle>(1.0)),
+	ShapePreset("unit square", std::make_shared<ShapePolygon>(std::vector<vec2d>{ vec2d(0, 0), vec2d(1, 0), vec2d(1, 1), vec2d(0, 1) })),
+	ShapePreset("equilateral triangle", std::make_shared<ShapePolygon>(std::vector<vec2d>{ vec2d(0, 0), vec2d(1, 0), vec2d(.5, sqrt(3) / 2) })),
+	ShapePreset("right isosceles triangle", std::make_shared<ShapePolygon>(std::vector<vec2d>{ vec2d(0, 0), vec2d(1, 0), vec2d(0, 1) })),
+	ShapePreset("1.0 x .1 rectangle", std::make_shared<ShapePolygon>(std::vector<vec2d>{ vec2d(0, 0), vec2d(1, 0), vec2d(1, .1), vec2d(0, .1) })),
+	ShapePreset("\"bent\" quadrilateral", std::make_shared<ShapePolygon>(std::vector<vec2d>{ vec2d(0, 0), vec2d(1, 0), vec2d(.2, .2), vec2d(0, 1) })),
+	ShapePreset("regular pentagon", std::make_shared<ShapePolygon>(generate_regular_ngon_verts(5))),
+	ShapePreset("regular hexagon", std::make_shared<ShapePolygon>(generate_regular_ngon_verts(6))),
+	ShapePreset("4-pointed star", std::make_shared<ShapePolygon>(std::vector<vec2d>{
+		vec2d(0, 1),
+		vec2d(.2, .2),
+		vec2d(1, 0),
+		vec2d(.2, -.2),
+		vec2d(0, -1),
+		vec2d(-.2, -.2),
+		vec2d(-1, 0),
+		vec2d(-.2, .2)
+	})),
+	ShapePreset("20-pointed comb", std::make_shared<ShapePolygon>(generate_comb_verts()))
+};
+
 void Application::read_shape(std::istream& is, std::ostream& os)
 {
-	bool circle;
+	bool custom_circle = false;
+	bool custom_polygon = false;
 	while (true)
 	{
-		os << "Distributing points inside a circle or a polygon? (c/p)" << endl;
+		os << "Choose the container." << endl;
+		for (uint32_t i = 0; i < preset_count; i++)
+			os << "[" << (i + 1) << "] " << shape_presets[i].name << std::endl;
+		os << "[" << preset_count + 1 << "] custom circle" << std::endl;
+		os << "[" << preset_count + 2 << "] custom polygon" << std::endl;
 		const str ln = getln(is);
-		if (ln.length() != 0)
+		uint32_t selected;
+		const NumberParseResult res = to_nneg_int(ln, selected);
+		if (res == OK && selected != 0 && selected <= preset_count + 2)
 		{
-			const char frst = ln[0];
-			if (frst == 'c' || frst == 'C')
-			{
-				circle = true;
-				break;
-			}
-			else if (frst == 'p' || frst == 'P')
-			{
-				circle = false;
-				break;
-			}
+			if (selected <= preset_count)
+				shape = shape_presets[selected - 1].shape;
+			else if (selected == preset_count + 1)
+				custom_circle = true;
+			else
+				custom_polygon = true;
+			break;
 		}
-		os << "Enter 'c' (for circle) or 'p' (for polygon)." << endl;
+		os << "Enter an integer between 1 and " << preset_count << "." << endl;
 	}
 
-	os << "You chose " << (circle ? "circle" : "polygon") << "." << endl;
-
-	if (circle)
+	if (custom_circle)
 	{
+		os << "You chose custom circle." << endl;
 		double r;
 		while (true)
 		{
@@ -215,8 +239,9 @@ void Application::read_shape(std::istream& is, std::ostream& os)
 		}
 		shape = std::make_shared<ShapeCircle>(r);
 	}
-	else
+	else if (custom_polygon)
 	{
+		os << "You now need to specify the coordinates of the vertices of the custom polygon." << endl;
 		while (true)
 		{
 			std::vector<vec2d> points;
@@ -224,7 +249,7 @@ void Application::read_shape(std::istream& is, std::ostream& os)
 			{
 				const bool point_required = points.size() <= 2;
 				const str note = point_required ? "" : " or leave blank to finish";
-				os << "Enter the coorindates (format \"x y\") of vertex " << points.size() + 1 << note << "." << endl;
+				os << "Enter the coordinates (format \"x y\") of vertex " << points.size() + 1 << note << "." << endl;
 				const str ln = getln(is);
 				if (ln.length() == 0 && !point_required)
 					break;
@@ -237,23 +262,17 @@ void Application::read_shape(std::istream& is, std::ostream& os)
 				else
 				{
 					points.push_back(vec2d(x, y));
-					/*if (!has_no_intersections_open(points))
-					{
-						os << "Your polygon was intersecting itself. Starting over." << endl;
-						points.clear();
-						break;
-					}*/
 				}
 			}
 			if (points.size() != 0)
 			{
-				//if (has_no_intersections_closing(points))
-				//{
+				if (has_interior(points))
+				{
 					shape = std::make_shared<ShapePolygon>(points);
 					break;
-				//}
-				//else
-				//	os << "Your polygon was intersecting itself. Starting over." << endl;
+				}
+				else
+					os << "Your polygon has no interior. Starting over." << endl;
 			}
 		}
 	}

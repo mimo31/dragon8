@@ -13,6 +13,14 @@
 namespace dragon8
 {
 
+enum NumberParseResult
+{
+	OK, TOO_BIG, SYNTAX_ERROR
+};
+
+NumberParseResult to_nneg_int(const std::string& s, uint32_t& val);
+bool has_interior(const std::vector<vec2d>& verts);
+
 class Application
 {
 private:

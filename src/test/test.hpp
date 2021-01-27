@@ -15,6 +15,8 @@ class Tester
 private:
 	bool failed = false;
 	void test_shape_polygon();
+	void test_no_interior_polygon();
+	void test_to_nneg_int();
 	void test_all();
 
 public:

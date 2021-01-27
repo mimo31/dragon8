@@ -115,7 +115,7 @@ PointsState DistInvSolver::solve() const
 {
 	std::random_device rd;
 	std::mt19937 rgen(rd());
-	
+
 	if (n < 100)
 		return selectSolve(300, 500, 5000).ps;
 	else if (n < 1000)
@@ -123,7 +123,7 @@ PointsState DistInvSolver::solve() const
 	else if (n < 2000)
 		return singleSolve(5000).ps;
 	else
-		return singleSolve(0).ps;
+		return singleSolve(50).ps;
 }
 
 }
