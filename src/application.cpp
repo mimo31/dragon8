@@ -264,7 +264,7 @@ void Application::read_opt_type(std::istream& is, std::ostream& os)
 	while (true)
 	{
 		os << "What do you want to optimize?" << endl;
-		os << "[1] minimize the sum 1 / d_{i,j}" << endl;
+		os << "[1] minimize sum 1 / d_{i,j}" << endl;
 		os << "[2] maximize min d_{i,j}" << endl;
 		const str ln = getln(is);
 		if (ln.size() != 0 && ln[0] == '1')

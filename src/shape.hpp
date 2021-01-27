@@ -18,6 +18,8 @@
 #include "rescaling.hpp"
 #include "vec2d.hpp"
 
+#include "test/test.hpp"
+
 namespace dragon8
 {
 
@@ -53,6 +55,7 @@ public:
 
 class ShapePolygon : public Shape
 {
+	friend Tester;
 private:
 	std::vector<vec2d> verts;
 

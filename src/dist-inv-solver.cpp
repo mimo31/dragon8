@@ -113,6 +113,9 @@ CompState DistInvSolver::selectSolve(const uint32_t pool_size, const uint32_t in
 
 PointsState DistInvSolver::solve() const
 {
+	std::random_device rd;
+	std::mt19937 rgen(rd());
+	
 	if (n < 100)
 		return selectSolve(300, 500, 5000).ps;
 	else if (n < 1000)

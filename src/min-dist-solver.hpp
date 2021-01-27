@@ -17,6 +17,10 @@ namespace dragon8
 
 class MinDistSolver : public Solver
 {
+private:
+	void jumpSolve(PointsState& ps, const uint32_t iters, RGen& rgen) const;
+	void shiftSolve(PointsState& ps, const uint32_t iters, RGen& rgen) const;
+
 public:
 	MinDistSolver(const std::shared_ptr<Shape> shape, const uint32_t n);
 

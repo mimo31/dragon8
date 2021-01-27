@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME}
 	rescaling.cpp
 	shape.cpp
 	solver.cpp
+	test/test.cpp
 	vec2d.cpp
 )
 

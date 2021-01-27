@@ -125,6 +125,12 @@ bool ShapePolygon::is_inside(const vec2d p) const
 			lastpos = nv;
 			quadstravelled++;
 		}
+		else if (nq == lastquad - 1 || (nq == 3 && lastquad == 0))
+		{
+			lastquad = nq;
+			lastpos = nv;
+			quadstravelled--;
+		}
 		else
 		{
 			const vec2d vec = nv - lastpos;
@@ -136,7 +142,7 @@ bool ShapePolygon::is_inside(const vec2d p) const
 			lastpos = nv;
 		}
 	}
-	return quadstravelled > 1 || quadstravelled < -1;
+	return (quadstravelled & 7) >= 2 && (quadstravelled & 7) <= 6;
 	/*double mnx = 0, mny = 0;
 	for (const vec2d v : verts)
 	{
