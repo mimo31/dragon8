@@ -10,7 +10,7 @@ dragon8 is a "zápočtový program" for the Programování 3 class.
 ![packing of 13 points](./doc/img/13_ucirc_0_613196.png)
 
 #### distribution of n = 50 points inside a square with lowest energy (~1/r potential) found by the program
-![distribution of 50 points](./doc/img/50_usq_46953.png)
+![distribution of 50 points](./doc/img/50_usq_46953_10.png)
 
 #### best packing of n = 1500 points inside a regular pentagon found by the program
 ![packing of 1500 points](./doc/img/1500_pent_0_04297249.png)
