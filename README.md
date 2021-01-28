@@ -7,16 +7,16 @@ dragon8 is currently in development.
 dragon8 is a "zápočtový program" for the Programování 3 class.
 
 #### best packing of n = 13 points inside a circle found by the program
-![packing of 13 points](./doc/img/13_ucirc_0_6180339887415.png)
+<img src="./doc/img/13_ucirc_0_6180339887415.png" alt="packing of 13 points" width="256"/>
 
-#### distribution of n = 50 points inside a square with lowest energy (~1/r potential) found by the program
-![distribution of 50 points](./doc/img/50_usq_2499_190733.png)
+#### best distribution of n = 50 points inside a square with lowest energy (~1/r potential) found by the program
+<img src="./doc/img/50_usq_2499_190733.png" alt="distribution of 50 points" width="256"/>
 
 #### best packing of n = 1500 points inside a regular pentagon found by the program
-![packing of 1500 points](./doc/img/1500_pent_0_0430138.png)
+<img src="./doc/img/1500_pent_0_0430138.png" alt="packing of 1500 points" width="256"/>
 
-#### distribution of n = 1500 points inside an equilateral triangle with lowest energy found by the program
-![distribution of 1500 points](./doc/img/1500_etri_4411232.png)
+#### best distribution of n = 1500 points inside an equilateral triangle with lowest energy found by the program
+<img src="./doc/img/1500_etri_4411232.png" alt="distribution of 1500 points" width="256"/>
 
 
 ## dependencies
