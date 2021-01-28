@@ -13,7 +13,7 @@
 namespace dragon8
 {
 
-void write_image(const ShapePtr shape, const PointsState& state, const std::string& filename);
+void write_image(const ShapePtr shape, const PointsState& state, const std::string& filename, const double circ_rad);
 
 }
 

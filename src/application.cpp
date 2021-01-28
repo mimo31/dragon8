@@ -41,7 +41,7 @@ void Application::run()
 	}
 
 	if (generate_image)
-		write_image(shape, ps, "out.png");
+		write_image(shape, ps, image_filename, opt_type == OptimalizationType::MAX_MIN_DIST ? score / 2 : 0);
 }
 
 NumberParseResult to_nneg_int(const std::string& s, uint32_t& val)
