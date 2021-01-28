@@ -1,0 +1,233 @@
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css">
+		<title>dragon8 Documentation</title>
+	</head>
+	<body>
+		<h1 id="title">
+			dragon8
+		</h1>
+		<h3>
+			General Description
+		</h3>
+		<p>
+			As input, the dragon8 program takes the following:
+			<ul>
+				<li>
+					a non-negative integer N (the number of points)
+				</li>
+				<li>
+					some specification of a shape which acts as a container for the points
+				</li>
+				<li>
+					a choice of one of preset functions of the points' coordinates (function to optimize)
+				</li>
+				<li>
+					miscellaneous settings regarding the execution of the program, IO, etc.
+				</li>
+			</ul>
+		</p>
+		<p>
+			All input is read from standard input. 
+		</p>
+		<p>
+			As output, the program returns the following:
+			<ul>
+				<li>
+					coordinates of N points inside the specified container found by the program such that the selected function the closest to optimal (minimal or maximal based on which function it is)
+				</li>
+				<li>
+					the value of the selected function for the outputted configuration of points
+				</li>
+			</ul>
+		</p>
+		<p>
+			Output is written to standard output and possibly also to an image file if it was so specified by the user.
+		</p>
+		<a name="sec_installation"></a>
+		<h3>
+			Installation Instructions
+		</h3>
+		<p>
+			To use the program on your machine, you need to download the source code (<a href="https://github.com/mimo31/dragon8">repo</a>), download the required libraries, and compile. Detailed instructions now follow.
+			<ol>
+				<li>
+					Download the source code from the project's <a href="https://github.com/mimo31/dragon8">GitHub repository</a>. Be advised to download one of the <a href="https://github.com/mimo31/dragon8/releases">releases</a> rather than the latest since the releases are generally more production-ready.
+				</li>
+				<li>
+					Download and install all the dependencies. For more details about each dependecy, see <a href="#sec_dependencies">Dependencies</a>.
+				</li>
+				<li>
+					Create an empty directory in which CMake will build the project.
+				</li>
+				<li>
+					Set the build directory as current and setup CMake by <span class="command">cmake &lt;<span class="text_in_command">repository directory</span>&gt;/src</span>.
+					<ul>
+						<li>
+							Use <span class="command">cmake -DCMAKE_BUILD_TYPE=Release</span> or <span class="command">cmake -DCMAKE_BUILD_TYPE=Debug</span> to specify that you want a release or a debug build.
+						</li>
+						<li>
+							A release build is generally more recommended because the compiled program is then faster.
+						</li>
+					</ul>
+				</li>
+				<li>
+					Run <span class="command">cmake --build .</span> to make let CMake compile and build the sources.
+				</li>
+				<li>
+					The final executable is the <span class="command">dragon8</span> file in the current directory (i.e. the build directory). You can run it by <span class="command">./dragon8</span>.
+				</li>
+			</ol>
+		</p>
+		<a name="sec_dependencies"></a>
+		<h3>
+			Dependencies
+		</h3>
+		<p>
+			The project depends on the following libraries and utilies:
+			<ul>
+				<li>
+					CMake ver. 3.16 or higher
+					<ul>
+						<li>
+							<a href="https://cmake.org/">https://cmake.org/</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					CImg ver. 2.9.4
+					<ul>
+						<li>
+							CImg is an image-processing library and it is used by dragon8 to draw the outputted images.
+						</li>
+						<li>
+							CImg project site: <a href="https://cimg.eu/">https://cimg.eu/</a>
+						</li>
+						<li>
+							CImg code repository: <a href="https://github.com/dtschump/CImg">https://github.com/dtschump/CImg</a>
+						</li>
+						<li>
+							CImg ver. 2.9.4 download: <a href="https://github.com/dtschump/CImg/archive/v.2.9.4.zip">https://github.com/dtschump/CImg/archive/v.2.9.4.zip</a>
+						</li>
+						<li>
+							To install CImg:
+						</li>
+						<ul>
+						<li>
+							CImg is a header-only library. It consists of only one header file, <span class="command">CImg.h</span>. Download this file, for which you can use the links above.
+						</li>
+						<li>
+							Put a copy of <span class="command">CImg.h</span> into the <span class="command">src</span> directory in your clone of the dragon8 repository.
+						</li>
+						</ul>
+					</ul>
+				</li>
+			</ul>
+			After the install all the dependencies, you can proceed to <a href="#sec_installation">Installation Instructions</a>.
+		</p>
+		<h3>
+			Program Control
+		</h3>
+		<p>
+			After the program is run, the user is asked to enter the required input while being guided by th program. Whenever the input entered by the user is ill formatted or invalid in any other way, the program ask for the same information again. The user is asked to enter the following information in the following order:
+			<ul>
+				<li>
+					N, a non-negative integer less than or equal to 1'000'000; the number of points to be distributed
+				</li>
+				<li>
+					inside which type of container the points should be distributed (a list of numbered options is shown and one of the numbers is expected from the user)
+					<ul>
+						<li>
+							The user can choose either choose from a list of preset containers or they can select the <span class="command">custom circle</span> or the <span class="command">custom polygon</span> option.
+						</li>
+						<li>
+							If <span class="command">custom circle</span> is selected, the user is then asked to enter the radius of the circle. A positive real number is expected.
+						</li>
+						<li>
+							If <span class="command">custom polygon</span> is selected, the user is then asked to enter (in order) the coordinates of each vertex of the polygon. Each coordinate pair should be entered on a separate line as <span class="command">x y</span>. So, for example, each of the following lines constitues valid input for one coordinate pair.
+							<ul>
+								<li>
+									<span class="command">0 0</span>
+								</li>
+								<li>
+									<span class="command">34 -2</span>
+								</li>
+								<li>
+									<span class="command">.4 1e3</span>
+								</li>
+								<li>
+									<span class="command">0.4 123.456</span>
+								</li>
+							</ul>
+						</li>
+						<li>
+							For more information about the handling of container shapes by dragon8, see <a href="#sec_containers">Containers</a>.
+						</li>
+					</ul>
+				</li>
+				<li>
+					which type of optimization should be performed, i.e., which function of the points' coordinates should be minimized or maximized
+					<ul>
+						<li>
+							A numbered list of options is presented to the user and one of the numbers is expected.
+						</li>
+						<li>
+							For more information about the functions dragon8 optimizes, see <a href="#sec_opt_functions">Optimized Functions</a>
+						</li>
+					</ul>
+				</li>
+				<li>
+					whether the coordinates of the N points in the final configuration should be printed to standard output after the computation
+					<ul>
+						<li>
+							A line with 'y' (for yes) or 'n' (for no) is expected.
+						</li>
+					</ul>
+				</li>
+				<li>
+					whether the final configuration of N points should be drawn into an image file
+					<ul>
+						<li>
+							A line with 'y' (for yes) or 'n' (for no) is expected.
+						</li>
+						<li>
+							If the user enters 'y', they are then also asked to enter the path to the image file that should be written. The actual path to the image file that will be written is then constructed by appending '.png' to what the user specified. If the user enters an empty line, the image will be written to 'out.png' in the current directory by default.
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</p>
+		<p>
+			At the moment the last piece of information from the user is entered, the program starts the computation. It automatically finishes after a fixed number of iterations. On a modern computer, this should not take much longer than one minute. For more information about the computations, see <a href="#sec_opt_algorithms">Optimization Algorithms</a>.
+		</p>
+		<p>
+			After the computation finishes,
+			<ul>
+				<li>
+					the final value (denoted as 'score') of the optimized function is printed to standard output,
+				</li>
+				<li>
+					the coordinates of the final configuration and printed to standard output (if the user requested so),
+				</li>
+				<li>
+					and the image file is written (if the user requested so).
+				</li>
+			</ul>
+			</p>
+		<a name="sec_containers"></a>
+		<h3>
+			Containers (Shapes)
+		</h3>
+		<p>
+			Generally, containers are sets of points.
+		</p>
+		<a name="sec_opt_functions"></a>
+		<h3>
+			Optimized Functions
+		</h3>
+		<a name="sec_opt_algorithms"></a>
+		<h3>
+			Optimization Algorithms
+		</h3>
+	</body>
+</html>

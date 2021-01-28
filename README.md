@@ -21,6 +21,7 @@ dragon8 is a "zápočtový program" for the Programování 3 class.
 
 ## dependencies
 
+* CMake 3.16 or higher
 * CImg 2.9.4
   - a header-only image-processing library
   - site: http://cimg.eu/

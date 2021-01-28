@@ -1,0 +1,11 @@
+#title {
+	font-family: sans-serif;
+}
+
+.command {
+	font-family: monospace;
+}
+
+.text_in_command {
+	font-style: italic;
+}
