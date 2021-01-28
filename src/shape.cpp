@@ -86,7 +86,7 @@ Rescaling ShapeCircle::draw(cimg_library::CImg<unsigned char>& img, const rectan
 	img.draw_circle(ccoors.x, ccoors.y, round(rad), white, 1.0);
 
 	const double sc = rad / r;
-	return Rescaling(center, sc, sc);
+	return Rescaling(sc, sc, center);
 }
 
 ShapePolygon::ShapePolygon(const std::vector<vec2d>& verts) : verts(verts)
@@ -214,27 +214,26 @@ rectangle2d ShapePolygon::get_box() const
 Rescaling ShapePolygon::draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const
 {
 	const rectangle2d real_box = get_box();
-	Rescaling resc;
-	if (real_box.get_width() * box.get_height() < real_box.get_height() * box.get_width())
+	rectangle2d image_area;
+	if (real_box.get_width() * (box.get_height() + 1) < real_box.get_height() * (box.get_width() + 1))
 	{
-		const double x0at = (box.get_width() - real_box.get_width() / real_box.get_height() * box.get_height()) / 2;
-		const double x1at = (box.get_width() + real_box.get_width() / real_box.get_height() * box.get_height()) / 2;
-		const double orx = x0at - real_box.c0.x / real_box.get_width() * (x1at - x0at);
-		const double ory = -real_box.c0.y / real_box.get_height() * box.get_height();
-		const double sx = (x1at - x0at) / real_box.get_width();
-		const double sy = box.get_height() / real_box.get_height();
-		resc = Rescaling(vec2d(orx, ory), sx, sy);
+		image_area = rectangle2d(
+			(box.c0.x + box.c1.x + 1 - (box.get_height() + 1) * real_box.get_width() / real_box.get_height()) / 2,
+			box.c0.y,
+			(box.c0.x + box.c1.x + 1 + (box.get_height() + 1) * real_box.get_width() / real_box.get_height()) / 2,
+			box.c1.y + 1
+		);
 	}
 	else
 	{
-		const double orx = -real_box.c0.x / real_box.get_width() * box.get_width();
-		const double y0at = (box.get_height() - real_box.get_height() / real_box.get_width() * box.get_width()) / 2;
-		const double y1at = (box.get_height() + real_box.get_height() / real_box.get_width() * box.get_width()) / 2;
-		const double ory = y0at - real_box.c0.y / real_box.get_height() * (y1at - y0at);
-		const double sx = (y1at - y0at) / real_box.get_height();
-		const double sy = box.get_width() / real_box.get_width();
-		resc = Rescaling(vec2d(orx, ory), sx, sy);
+		image_area = rectangle2d(
+			box.c0.x,
+			(box.c0.y + box.c1.y + 1 - (box.get_width() + 1) * real_box.get_height() / real_box.get_width()) / 2,
+			box.c1.x + 1,
+			(box.c0.y + box.c1.y + 1 + (box.get_width() + 1) * real_box.get_height() / real_box.get_width()) / 2
+		);
 	}
+	const Rescaling resc(real_box, image_area);
 	cimg_library::CImg<int> points(verts.size(), 2);
 	for (uint32_t i = 0; i < verts.size(); i++)
 	{

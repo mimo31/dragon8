@@ -16,6 +16,8 @@ struct rectangle2d
 {
 	vec2d c0, c1;
 
+	rectangle2d() = default;
+
 	rectangle2d(const vec2d c0, const vec2d c1) : c0(c0), c1(c1)
 	{
 	}

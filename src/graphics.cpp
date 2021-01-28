@@ -24,7 +24,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 	constexpr int32_t xbrd = 16, ybrd = 16;
 	CImg<unsigned char> img(w, h, 1, 3, 0);
 
-	const rectangle2i draw_area = rectangle2i(xbrd, ybrd, w - 1 - 2 * xbrd, h - 1 - 2 * ybrd);
+	const rectangle2i draw_area = rectangle2i(xbrd, ybrd, w - 1 - xbrd, h - 1 - ybrd);
 
 	const Rescaling resc = shape->draw(img, draw_area);
 
