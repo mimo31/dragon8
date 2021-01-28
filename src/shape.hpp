@@ -30,6 +30,7 @@ typedef std::mt19937 RGen;
 class Shape
 {
 public:
+	virtual bool is_inside(const vec2d p) const = 0;
 	virtual vec2d gen_point(RGen& rgen) const = 0;
 	PointsState gen_state(const uint32_t n, RGen& rgen) const;
 	virtual vec2d bound(const vec2d vfrom, const vec2d vto) const = 0;
@@ -47,6 +48,7 @@ private:
 public:
 	ShapeCircle(const double r);
 
+	bool is_inside(const vec2d p) const override;
 	vec2d gen_point(RGen& rgen) const override;
 	vec2d bound(const vec2d vfrom, const vec2d vto) const override;
 	rectangle2d get_box() const override;
@@ -55,15 +57,13 @@ public:
 
 class ShapePolygon : public Shape
 {
-	friend Tester;
 private:
 	std::vector<vec2d> verts;
-
-	bool is_inside(const vec2d p) const;
 
 public:
 	ShapePolygon(const std::vector<vec2d>& verts);
 
+	bool is_inside(const vec2d p) const override;
 	vec2d gen_point(RGen& rgen) const override;
 	vec2d bound(const vec2d vfrom, const vec2d vto) const override;
 	rectangle2d get_box() const override;

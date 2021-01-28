@@ -18,8 +18,13 @@ namespace dragon8
 class MinDistSolver : public Solver
 {
 private:
-	void jumpSolve(PointsState& ps, const uint32_t iters, RGen& rgen) const;
-	void shiftSolve(PointsState& ps, const uint32_t iters, RGen& rgen) const;
+	void jump_solve(PointsState& ps, const uint32_t iters, RGen& rgen) const;
+	void shift_solve(PointsState& ps, const uint32_t iters, RGen& rgen) const;
+
+	bool fit_enough(const vec2d p0, const double d) const;
+	PointsState get_fit(const vec2d p0, const double d) const;
+	PointsState regular_fit(const vec2d p0, double& score) const;
+	PointsState search_regular_fits(const uint32_t iters, RGen& rgen) const;
 
 public:
 	MinDistSolver(const std::shared_ptr<Shape> shape, const uint32_t n);

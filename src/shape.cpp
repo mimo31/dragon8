@@ -48,6 +48,11 @@ ShapeCircle::ShapeCircle(const double r)
 {
 }
 
+bool ShapeCircle::is_inside(const vec2d p) const
+{
+	return p.len2() <= r * r;
+}
+
 vec2d ShapeCircle::gen_point(RGen& rgen) const
 {
 	std::uniform_real_distribution<> dist(-r, r);
@@ -65,11 +70,6 @@ vec2d ShapeCircle::bound(const vec2d vfrom, const vec2d vto) const
 	if (vto.len2() <= r * r)
 		return vto;
 	return vto.get_unit() * r;
-	/*const vec2d vmove = vto - vfrom;
-	const double vmlen2 = vmove.len2();
-	const double b = vfrom.dot(vmove);
-	const double t = sqrt(b * b + (r * r - vfrom.len2()) * vmlen2) / vmlen2;
-	return vfrom + vmove * t;*/
 }
 
 rectangle2d ShapeCircle::get_box() const
@@ -143,17 +143,6 @@ bool ShapePolygon::is_inside(const vec2d p) const
 		}
 	}
 	return (quadstravelled & 7) >= 2 && (quadstravelled & 7) <= 6;
-	/*double mnx = 0, mny = 0;
-	for (const vec2d v : verts)
-	{
-		mnx = std::min(v.x, mnx);
-		mny = std::min(v.y, mny);
-	}
-	const vec2d b(mnx - 1, mny - 1);
-	bool inside = intersects(b, p, verts[0], verts[verts.size() - 1]);
-	for (uint32_t i = 0; i < verts.size() - 1; i++)
-		inside ^= intersects(b, p, verts[i], verts[i + 1]);
-	return inside;*/
 }
 
 vec2d ShapePolygon::gen_point(RGen& rgen) const
