@@ -2,6 +2,8 @@
 	<head>
 		<link rel="stylesheet" href="style.css">
 		<title>dragon8 Documentation</title>
+		<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+		<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 	</head>
 	<body>
 		<h1 id="title">
@@ -14,7 +16,7 @@
 			As input, the dragon8 program takes the following:
 			<ul>
 				<li>
-					a non-negative integer N (the number of points)
+					a non-negative integer \(N\) (the number of points)
 				</li>
 				<li>
 					some specification of a shape which acts as a container for the points
@@ -34,7 +36,7 @@
 			As output, the program returns the following:
 			<ul>
 				<li>
-					coordinates of N points inside the specified container found by the program such that the selected function the closest to optimal (minimal or maximal based on which function it is)
+					coordinates of \(N\) points inside the specified container found by the program such that the selected function the closest to optimal (minimal or maximal based on which function it is)
 				</li>
 				<li>
 					the value of the selected function for the outputted configuration of points
@@ -55,7 +57,7 @@
 					Download the source code from the project's <a href="https://github.com/mimo31/dragon8">GitHub repository</a>. Be advised to download one of the <a href="https://github.com/mimo31/dragon8/releases">releases</a> rather than the latest since the releases are generally more production-ready.
 				</li>
 				<li>
-					Download and install all the dependencies. For more details about each dependecy, see <a href="#sec_dependencies">Dependencies</a>.
+					Download and install all the dependencies. For more details about each dependency, see <a href="#sec_dependencies">Dependencies</a>.
 				</li>
 				<li>
 					Create an empty directory in which CMake will build the project.
@@ -84,7 +86,7 @@
 			Dependencies
 		</h3>
 		<p>
-			The project depends on the following libraries and utilies:
+			The project depends on the following libraries and utilities:
 			<ul>
 				<li>
 					CMake ver. 3.16 or higher
@@ -129,10 +131,10 @@
 			Program Control
 		</h3>
 		<p>
-			After the program is run, the user is asked to enter the required input while being guided by th program. Whenever the input entered by the user is ill formatted or invalid in any other way, the program ask for the same information again. The user is asked to enter the following information in the following order:
+			After the program is run, the user is asked to enter the required input while being guided by the program. Whenever the input entered by the user is ill formatted or invalid in any other way, the program ask for the same information again. The user is asked to enter the following information in the following order:
 			<ul>
 				<li>
-					N, a non-negative integer less than or equal to 1'000'000; the number of points to be distributed
+					\(N\), a non-negative integer less than or equal to 1'000'000; the number of points to be distributed
 				</li>
 				<li>
 					inside which type of container the points should be distributed (a list of numbered options is shown and one of the numbers is expected from the user)
@@ -144,7 +146,7 @@
 							If <span class="command">custom circle</span> is selected, the user is then asked to enter the radius of the circle. A positive real number is expected.
 						</li>
 						<li>
-							If <span class="command">custom polygon</span> is selected, the user is then asked to enter (in order) the coordinates of each vertex of the polygon. Each coordinate pair should be entered on a separate line as <span class="command">x y</span>. So, for example, each of the following lines constitues valid input for one coordinate pair.
+							If <span class="command">custom polygon</span> is selected, the user is then asked to enter (in order) the coordinates of each vertex of the polygon. Each coordinate pair should be entered on a separate line as <span class="command">x y</span>. So, for example, each of the following lines constitutes valid input for one coordinate pair.
 							<ul>
 								<li>
 									<span class="command">0 0</span>
@@ -219,15 +221,89 @@
 			Containers (Shapes)
 		</h3>
 		<p>
-			Generally, containers are sets of points.
+			Generally, containers are sets of points (\(\subseteq\mathbb R^2\)). Two types of containers are supported by dragon8: circles and polygons.
+		</p>
+		<h4>
+			Circles
+		</h4>
+		<p>
+			A circle is given solely by its radius \(r\in\mathbb R^+\). All circles in dragon8 are centered at the origin. So a circle of radius \(r\) is the set \(\{(x,y)\mid x^2+y^2\leq r^2\}\).
+		</p>
+		<h4>
+			Polygons
+		</h4>
+		<p>
+			A polygon is given by an ordered sequence of at least 3 points in \(\mathbb R^2\). Those are the vertices of the polygon. Whether a point is a part of the polygon is then determined by the even-odd rule (see <a href="https://en.wikipedia.org/wiki/Even%E2%80%93odd_rule">wikipedia</a>).
 		</p>
 		<a name="sec_opt_functions"></a>
 		<h3>
 			Optimized Functions
 		</h3>
+		<p>
+			dragon8 optimizes functions which assign real numbers (score) to a configuration of points inside the container. That is functions
+			$$
+			S^N\to\mathbb R,
+			$$
+			where \(S\) is the container (the set of all possible positions).
+		</p>
+		<p>
+			More specifically, the functions dragon8 optimizes are only functions of the distances between any two of the \(N\) points. That implies, for example, that they are invariant under the translation or rotation of all the points.
+		</p>
+		<p>
+			There are two such functions dragon8 can optimize. Their detailed descriptions now follow.
+		</p>
+		<h4>
+			Minimizing Sum of Inverse Distance
+		</h4>
+		<p>
+			dragon8 can minimize
+			$$
+			(p_1,\dots,p_N)\mapsto\sum_{\substack{i,j=1\\ i < j}}^N\frac1{\lvert p_i-p_j\rvert}.
+			$$
+			If we imagine that the \(N\) points are \(N\) charged particles with charge of the same sign and magnitude, then minimizing this function is equivalent to minimizing the electrostatic potential energy.
+		</p>
+		<h4>
+			Maximizing Minimal Distance
+		</h4>
+		<p>
+			dragon8 can maximize
+			$$
+			(p_1,\dots,p_N)\mapsto\min_{\substack{i,j\in\{1,\dots,N\}\\ i < j}}\lvert p_i-p_j\rvert.
+			$$
+			Maximizing the function is equivalent to the circle packing problem.
+		</p>
 		<a name="sec_opt_algorithms"></a>
 		<h3>
 			Optimization Algorithms
 		</h3>
+		<p>
+			While solving a problem, dragon8 applies multiple algorithms. Based on \(N\) the number of iterations is calculated such that computation finishes in a reasonable time. Below are the descriptions of algorithms used for the optimization of each of the optimized functions.
+		</p>
+		<h4>
+			Algorithms for Minimizing the Sum of Inverse Distance
+		</h4>
+		<ul>
+			<li>
+				In one iteration, compute the Coulomb force (of all the other points) acting on each point. For point \(i\), that is
+				$$
+				F_i=\sum_{\substack{j=1\\ j\ne i}}^N\frac{p_i-p_j}{\lvert p_i-p_j\rvert^3}.
+				$$
+				Then move each point along the force acting on it. I.e. \(p_i\mapsto p_i+\alpha F_i\).
+			</li>
+		</ul>
+		<h4>
+			Algorithms for Maximizing the Minimal Distance
+		</h4>
+		<ul>
+			<li>
+				In one iteration, find a point (\(p_i\)) which is the current minimal distance from some other point (\(p_j\)). Then iterate through all the remaining points to calculate the furthest point on the ray \(p_jp_i\) which is not closer to any of the remaining points than to \(p_j\). Assign \(p_i\) to that point.
+			</li>
+			<li>
+				In one iteration, find a point which is the current minimal distance from some other point. Let that be point \(i\). The randomly select points \(q\in S\) (points inside the container) until a \(q\) is found such that the distance from \(q\) to any point \(p_j\) apart from \(p_i\) is greater than the current minimum. Then assign \(p_i\mapsto q\).
+			</li>
+			<li>
+				Choose some distance \(d\). Randomly select a point \(b\in S\). Iterate though the points of \(S\) which are part of a regular triangular tiling (see <a href="https://en.wikipedia.org/wiki/Triangular_tiling">wikipedia</a>) of cell size \(d\) and containing \(b\). Do a binary search on the value of \(d\) to find its maximal value for which at least \(N\) points of the tiling lie in \(S\). Do this for multiple choices of \(b\) and select the one with the greatest maximal \(d\). The \(N\) points of the final configuration are then exactly the points of the regular tiling inside \(S\).
+			</li>
+		</ul>
 	</body>
 </html>
