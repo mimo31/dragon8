@@ -26,6 +26,8 @@ private:
 	PointsState regular_fit(const vec2d p0, double& score) const;
 	PointsState search_regular_fits(const uint32_t iters, RGen& rgen) const;
 
+	vec2d find_furthest(const PointsState& ps, const uint32_t moving_ind, double& dist2);
+
 public:
 	MinDistSolver(const std::shared_ptr<Shape> shape, const uint32_t n);
 

@@ -97,6 +97,16 @@ struct vec2d
 		return vec2d(-x, -y);
 	}
 
+	double dist2(const vec2d &other) const
+	{
+		return (*this - other).len2();
+	}
+
+	double dist(const vec2d &other) const
+	{
+		return (*this - other).len();
+	}
+
 	double dot(const vec2d &other) const
 	{
 		return x * other.x + y * other.y;
