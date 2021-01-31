@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME}
 	application.cpp
 	dist-inv-solver.cpp
 	evaluator.cpp
+	fortune.cpp
 	graphics.cpp
 	main.cpp
 	min-dist-solver.cpp

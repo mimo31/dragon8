@@ -107,6 +107,16 @@ struct vec2d
 		return (*this - other).len();
 	}
 
+	vec2d mid(const vec2d &other) const
+	{
+		return (*this + other) / 2;
+	}
+
+	vec2d operator^(const vec2d &other) const
+	{
+		return mid(other);
+	}
+
 	double dot(const vec2d &other) const
 	{
 		return x * other.x + y * other.y;
