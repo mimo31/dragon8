@@ -15,9 +15,6 @@
 #include "fortune.hpp"
 #include "graphics.hpp"
 
-template <typename T>
-using vec = std::vector<T>;
-
 using std::cout;
 using std::endl;
 
