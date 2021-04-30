@@ -75,27 +75,27 @@ struct vec2
 
 	vec2 operator+(const vec2 &other) const
 	{
-		return vec2d(x + other.x, y + other.y);
+		return vec2(x + other.x, y + other.y);
 	}
 
 	vec2 operator-(const vec2 &other) const
 	{
-		return vec2d(x - other.x, y - other.y);
+		return vec2(x - other.x, y - other.y);
 	}
 
 	vec2 operator*(const float_t a) const
 	{
-		return vec2d(a * x, a * y);
+		return vec2(a * x, a * y);
 	}
 
 	vec2 operator/(const float_t a) const
 	{
-		return vec2d(x / a, y / a);
+		return vec2(x / a, y / a);
 	}
 
 	vec2 operator-() const
 	{
-		return vec2d(-x, -y);
+		return vec2(-x, -y);
 	}
 
 	float_t dist2(const vec2 &other) const
@@ -143,12 +143,25 @@ struct vec2
 		return point(round(x), round(y));
 	}
 };
-
+/*
 template<typename float_t>
 vec2<float_t> operator*(const float_t a, const vec2<float_t>& v);
 
 template<typename float_t>
-std::ostream& operator<<(std::ostream& os, const vec2<float_t>& v);
+std::ostream& operator<<(std::ostream& os, const vec2<float_t>& v);*/
+
+template<typename float_t>
+vec2<float_t> operator*(const double a, const vec2<float_t>& v)
+{
+	return v * a;
+}
+
+template<typename float_t>
+std::ostream& operator<<(std::ostream& os, const vec2<float_t>& v)
+{
+	os << "vec2d(" << v.x << ", " << v.y << ")";
+	return os;
+}
 
 }
 

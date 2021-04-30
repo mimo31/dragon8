@@ -7,12 +7,48 @@
 #ifndef VORONOI_HPP
 #define VORONOI_HPP
 
+#include <unordered_map>
 #include <queue>
 #include <set>
 
+#include "print.hpp"
 #include "shape.hpp"
 #include "vec.hpp"
 #include "vec2.hpp"
+
+namespace dragon8
+{
+
+struct PointSiteData
+{
+	uint32_t left_site;
+	uint32_t right_site;
+
+	PointSiteData() = default;
+
+	PointSiteData(const uint32_t left_site, const uint32_t right_site) : left_site(left_site), right_site(right_site)
+	{
+	}
+
+	bool operator==(const PointSiteData &other) const
+	{
+		return left_site == other.left_site && right_site == other.right_site;
+	}
+};
+
+}
+
+namespace std
+{
+	template<>
+	struct hash<dragon8::PointSiteData>
+	{
+		size_t operator()(const dragon8::PointSiteData &site_data) const
+		{
+			return (((71 * size_t(site_data.left_site)) << 32) + 127 * site_data.right_site);
+		}
+	};
+}
 
 namespace dragon8
 {
@@ -35,52 +71,71 @@ private:
 	ShapePtr container;
 	vec<vec2<float_t>> sites;
 
-	float_t t;
+	float_t y0;
 
 	struct BeachLinePoint
 	{
-	private:
-		const bool is_dummy;
-		const float_t dummy_x;
-		const uint32_t point_id;
-		const uint32_t left_site, right_site;
-		const float_t *const t;
-		const vec<vec2<float_t>> *sites;
-
-		float_t get_x() const;
-
 	public:
-		BeachLinePoint(float_t dummy_x);
+		uint32_t left_site, right_site;
+		int32_t left_child_id, right_child_id, parent_id;
+		int32_t left_neighbor_id, right_neighbor_id;
+		/// Depth of the subtree below and including this point
+		uint32_t depth;
 
-		BeachLinePoint(uint32_t point_id, uint32_t left_site, uint32_t right_site, const float_t *t, const vec<vec2<float_t>> *sites);
+		BeachLinePoint() = default;
 
-		bool operator<(const BeachLinePoint &other) const;
+		BeachLinePoint(uint32_t left_site, uint32_t right_site, int32_t left_child_id, int32_t right_child_id, int32_t parent_id, int32_t left_neighbor_id, int32_t right_neighbor_id, uint32_t depth);
+
+		float_t get_x(float_t y0, const vec<vec2<float_t>> &sites) const;
+
+		void print(float_t y0, const vec<vec2<float_t>> &sites) const;
 	};
 
-	struct BeachLinePointData
-	{
-	private:
-		/// -1 iff no point on the left / on the right
-		uint32_t left_id, right_id;
-		const uint32_t left_site, right_site;
-	public:
-		BeachLinePointData(const uint32_t left_id, const uint32_t right_id, const uint32_t left_site, const uint32_t right_site)
-			: left_id(left_id), right_id(right_id), left_site(left_site), right_site(right_site)
-		{
-		}
-	};
+	/// Index (id) of the point at the root of the AVL tree
+	int32_t root_id = -1;
+	uint32_t most_left_id = -1;
+	uint32_t most_right_id = -1;
+	vec<BeachLinePoint> beach_line_points;
+	std::unordered_map<PointSiteData, uint32_t> sites_to_ind;
 
-	std::set<BeachLinePoint> beach_line;
-	vec<BeachLinePointData> beach_line_points;
+	/**
+	 * @param search_x value of x to search for in the beach line
+	 * @return index (id) of the beach line point before which a point with the given x should be put (or -1 iff it should be put at the end)
+	 */
+	int32_t find_put_before(float_t search_x) const;
+	/**
+	 * Inserts a new point into the beach line by updating the AVL tree (updates pointers in the tree and potentially rotates the tree to balance it)
+	 * @param before_id index (id) of the point before which the point should be added (or -1 iff it should be put at the end)
+	 * @param left_site left site for the point to add
+	 * @param right_site right site for the point to add
+	 */
+	void put_before(int32_t before_id, uint32_t left_site, uint32_t right_site);
+	/**
+	 * Rotates edges coming out of the specified vertex in the AVL tree above the beach line iff the vertex is unbalanced.
+	 * Always updates the depth at the specified point, but may invalidate depths at its ancestors.
+	 * Assumes that all descedants of the specified vertex are balanced and have correct depths.
+	 * @param point_id index (id) of the point to check and possibly rotate
+	 */
+	void possibly_rotate(uint32_t point_id);
+	void rotate_upward(uint32_t point_id);
+	/**
+	 * @param point_id index (id) of the point a reference to which we want
+	 * @return pointer to the variable that holds the reference to the specified point
+	 */
+	int32_t *get_holder(uint32_t point_id);
+
+	void erase(uint32_t point_id);
+
+	/*std::set<BeachLinePoint> beach_line;
+	vec<BeachLinePointData> beach_line_points;*/
 
 	struct FortuneEvent
 	{
-	private:
-		const float_t time;
 	public:
-		const bool is_site;
-		const uint32_t site_id;
-		const uint32_t left_site, rem_site, right_site;
+		float_t time;
+		bool is_site;
+		uint32_t site_id;
+		uint32_t left_site, rem_site, right_site;
 
 		FortuneEvent(float_t time, uint32_t site_id);
 		FortuneEvent(float_t time, uint32_t left_site, uint32_t rem_site, uint32_t right_site);
@@ -94,6 +149,10 @@ private:
 
 	void submit_vertex(uint32_t site0_id, uint32_t site1_id, uint32_t site2_id);
 
+	void print_beach_line() const;
+	
+	//static ostream &operator<<(ostream &os, const typename Voronoi<double>::BeachLinePoint &p);
+
 public:
 	Voronoi(ShapePtr container);
 	void init_sites(const vec<vec2<float_t>> &sites);
@@ -104,5 +163,8 @@ public:
 };
 
 }
+
+
+#include "voronoi.cpp"
 
 #endif // VORONOI_HPP

@@ -8,8 +8,9 @@
 
 #include <iostream>
 
-#include "../application.hpp"
-#include "../shape.hpp"
+#include "application.hpp"
+#include "shape.hpp"
+#include "voronoi.hpp"
 
 namespace dragon8
 {
@@ -81,9 +82,18 @@ void Tester::test_all()
 	test_to_nneg_int();
 }
 
+void Tester::test_voronoi()
+{
+	Voronoi<double> voronoi(nullptr);
+	const vec<vec2<double>> sites({ vec2<double>(0, 0), vec2<double>(1, 1), vec2<double>(4, 3) });
+	voronoi.init_sites(sites);
+	voronoi.init_compute();
+}
+
 void Tester::run_tests()
 {
-	test_all();
+	test_voronoi();
+	//test_all();
 	if (!failed)
 		std::cout << "ALL TESTS PASSED" << std::endl;
 }

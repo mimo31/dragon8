@@ -17,6 +17,7 @@ private:
 	void test_shape_polygon();
 	void test_no_interior_polygon();
 	void test_to_nneg_int();
+	void test_voronoi();
 	void test_all();
 
 public:

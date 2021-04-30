@@ -8,7 +8,7 @@
 
 #include "application.hpp"
 
-//#define TESTING
+#define TESTING
 
 #ifdef TESTING
 #include "test/test.hpp"

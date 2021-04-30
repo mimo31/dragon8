@@ -14,9 +14,7 @@ add_executable(${PROJECT_NAME}
 	shape.cpp
 	solver.cpp
 	test/test.cpp
-	vec2.cpp
 	vec2d.cpp
-	voronoi.cpp
 )
 
 include_directories(${PROJECT_NAME} . alias)
