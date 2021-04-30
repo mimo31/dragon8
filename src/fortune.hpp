@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "shape.hpp"
-#include "vec2d.hpp"
+#include "vec2.hpp"
 
 namespace dragon8
 {

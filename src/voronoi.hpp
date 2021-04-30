@@ -93,8 +93,8 @@ private:
 
 	/// Index (id) of the point at the root of the AVL tree
 	int32_t root_id = -1;
-	uint32_t most_left_id = -1;
-	uint32_t most_right_id = -1;
+	int32_t most_left_id = -1;
+	int32_t most_right_id = -1;
 	vec<BeachLinePoint> beach_line_points;
 	std::unordered_map<PointSiteData, uint32_t> sites_to_ind;
 
@@ -126,9 +126,6 @@ private:
 
 	void erase(uint32_t point_id);
 
-	/*std::set<BeachLinePoint> beach_line;
-	vec<BeachLinePointData> beach_line_points;*/
-
 	struct FortuneEvent
 	{
 	public:
@@ -150,8 +147,30 @@ private:
 	void submit_vertex(uint32_t site0_id, uint32_t site1_id, uint32_t site2_id);
 
 	void print_beach_line() const;
-	
-	//static ostream &operator<<(ostream &os, const typename Voronoi<double>::BeachLinePoint &p);
+
+	void check_tree_structure() const;
+	void check_avl_structure() const;
+	vec<uint32_t> get_tree_vertices() const;
+	void check_linked_list_structure() const;
+	vec<uint32_t> get_linked_list_vertices() const;
+	void check_map_structure() const;
+	vec<uint32_t> get_map_vertices() const;
+	void check_beach_line_data_structure() const;
+	void check_beach_line_content() const;
+	void check_beach_line() const;
+
+	struct VoronoiVertex
+	{
+		uint32_t site0, site1, site2;
+
+		VoronoiVertex() = default;
+
+		VoronoiVertex(const uint32_t site0, const uint32_t site1, const uint32_t site2) : site0(site0), site1(site1), site2(site2)
+		{
+		}
+	};
+
+	vec<VoronoiVertex> vertices;
 
 public:
 	Voronoi(ShapePtr container);
@@ -159,12 +178,10 @@ public:
 	void init_compute();
 	void add_site(vec2<float_t> p);
 	void remove_site(uint32_t i);
+	vec<vec2<float_t>> get_vertices() const;
 	FurthestPointData<float_t> get_furthest() const;
 };
 
 }
-
-
-#include "voronoi.cpp"
 
 #endif // VORONOI_HPP

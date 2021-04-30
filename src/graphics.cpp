@@ -125,6 +125,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 		const point p = resc.map(v).get_rounded();
 		img.draw_circle(p.x, p.y, pr, potcol, 1.0);
 	}
+	
 
 	/*for (uint32_t i = 0; i < state.size(); i++)
 	{

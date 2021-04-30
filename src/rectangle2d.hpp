@@ -7,7 +7,7 @@
 #ifndef RECTAGLE2D_HPP
 #define RECTAGLE2D_HPP
 
-#include "vec2d.hpp"
+#include "vec2.hpp"
 
 namespace dragon8
 {

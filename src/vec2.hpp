@@ -163,6 +163,8 @@ std::ostream& operator<<(std::ostream& os, const vec2<float_t>& v)
 	return os;
 }
 
+typedef vec2<double> vec2d;
+
 }
 
 #endif // VEC2_HPP

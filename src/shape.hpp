@@ -16,7 +16,7 @@
 #include "rectangle2d.hpp"
 #include "rectangle2i.hpp"
 #include "rescaling.hpp"
-#include "vec2d.hpp"
+#include "vec2.hpp"
 
 #include "test/test.hpp"
 

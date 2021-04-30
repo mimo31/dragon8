@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "application.hpp"
+#include "graphics.hpp"
 #include "shape.hpp"
 #include "voronoi.hpp"
 
@@ -85,9 +86,31 @@ void Tester::test_all()
 void Tester::test_voronoi()
 {
 	Voronoi<double> voronoi(nullptr);
-	const vec<vec2<double>> sites({ vec2<double>(0, 0), vec2<double>(1, 1), vec2<double>(4, 3) });
-	voronoi.init_sites(sites);
-	voronoi.init_compute();
+	/*const vec<vec2<double>> sites0({ vec2<double>(0, 0), vec2<double>(1, 1), vec2<double>(4, 3) });
+	voronoi.init_sites(sites0);
+	voronoi.init_compute();*/
+	const std::vector<vec2d> verts{ vec2d(0, 0), vec2d(1, 0), vec2d(1, 1), vec2d(0, 1) };
+	const ShapePtr unit_square = std::make_shared<ShapePolygon>(verts);// unit_square(verts);
+	std::random_device dev;
+	std::mt19937 rgen(dev());
+	
+	//const PointsState st = unit_square->gen_state(10000, rgen);
+	/*for (const vec2d p : st)
+		cout << p << endl;
+	*/
+	//const PointsState st({ vec2d(0.460016, 0.802885), vec2d(0.14821, 0.672051), vec2d(0.77762, 0.170662), vec2d(0.958275, 0.894059) });
+	//const PointsState st({ vec2d(0.4, 0.4), vec2d(0.4, 0.6), vec2d(0.6, 0.4), vec2d(0.6, 0.6) });
+	PointsState st;
+	constexpr int w = 3, h = 2;
+	for (int i = 0; i < w; i++)
+	{
+		for (int j = 0; j < h; j++)
+			st.push_back(vec2d((i + .5) / (2 * w) + .25, (j + .5) / (2 * h) + .25));
+	}
+	Voronoi<double> voron1(nullptr);
+	voron1.init_sites(st);
+	voron1.init_compute();
+	write_image(ShapePtr(unit_square), st, "voronoi_test.png", 0, voron1.get_vertices());
 }
 
 void Tester::run_tests()

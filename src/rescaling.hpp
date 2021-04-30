@@ -8,7 +8,7 @@
 #define RESCALING_HPP
 
 #include "rectangle2d.hpp"
-#include "vec2d.hpp"
+#include "vec2.hpp"
 
 namespace dragon8
 {

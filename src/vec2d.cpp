@@ -4,7 +4,7 @@
  * Author: Viktor Fukala
  * Created on 2021/1/23
  */
-#include "vec2d.hpp"
+#include "vec2.hpp"
 
 namespace dragon8
 {
