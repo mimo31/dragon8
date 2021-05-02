@@ -94,19 +94,19 @@ void Tester::test_voronoi()
 	std::random_device dev;
 	std::mt19937 rgen(dev());
 	
-	//const PointsState st = unit_square->gen_state(10000, rgen);
+	const PointsState st = unit_square->gen_state(1000, rgen);
 	/*for (const vec2d p : st)
 		cout << p << endl;
 	*/
 	//const PointsState st({ vec2d(0.460016, 0.802885), vec2d(0.14821, 0.672051), vec2d(0.77762, 0.170662), vec2d(0.958275, 0.894059) });
 	//const PointsState st({ vec2d(0.4, 0.4), vec2d(0.4, 0.6), vec2d(0.6, 0.4), vec2d(0.6, 0.6) });
-	PointsState st;
-	constexpr int w = 3, h = 2;
+	/*PointsState st;
+	constexpr int w = 10, h = 10;
 	for (int i = 0; i < w; i++)
 	{
 		for (int j = 0; j < h; j++)
 			st.push_back(vec2d((i + .5) / (2 * w) + .25, (j + .5) / (2 * h) + .25));
-	}
+	}*/
 	Voronoi<double> voron1(nullptr);
 	voron1.init_sites(st);
 	voron1.init_compute();

@@ -7,6 +7,7 @@
 #include "voronoi.hpp"
 
 #include <cassert>
+#include <cmath>
 #include <functional>
 
 #include "print.hpp"
@@ -38,6 +39,20 @@ void Voronoi<float_t>::init_compute()
 		events.push(FortuneEvent(sites[i].y, i));
 	const uint32_t site0 = events.top().site_id;
 	events.pop();
+	vec<uint32_t> first_sites{ site0 };
+	while (!events.empty() && sites[events.top().site_id].y + eps >= sites[site0].y)
+	{
+		first_sites.push_back(events.top().site_id);
+		events.pop();
+	}
+	sort(first_sites.begin(), first_sites.end(), [this](const uint32_t s0, const uint32_t s1)
+	{
+		return sites[s0].x < sites[s1].x;
+	});
+	for (uint32_t i = 0; i < first_sites.size() - 1; i++)
+	{
+		put_before(-1, first_sites[i], first_sites[i + 1]);
+	}
 	while (!events.empty())
 	{
 		if (do_checks)
@@ -117,8 +132,6 @@ void Voronoi<float_t>::init_compute()
 			if (do_checks)
 				check_beach_line();
 		}
-		//cout << "after add ";
-		//print_beach_line();
 	}
 }
 
@@ -141,6 +154,15 @@ int32_t Voronoi<float_t>::find_put_before(const float_t search_x) const
 template<typename float_t>
 void Voronoi<float_t>::put_before(const int32_t before_id, const uint32_t left_site, const uint32_t right_site)
 {
+	if (beach_line_points.empty())
+	{
+		beach_line_points.push_back(BeachLinePoint(left_site, right_site, -1, -1, -1, -1, -1, 0));
+		root_id = most_left_id = most_right_id = 0;
+		sites_to_ind[PointSiteData(left_site, right_site)] = 0;
+		if (do_checks)
+			check_beach_line_data_structure();
+		return;
+	}
 	int32_t parent_id;
 	const uint32_t new_id = beach_line_points.size();
 	auto put_as_left_child = [&](const uint32_t par_id)
@@ -606,7 +628,7 @@ float_t Voronoi<float_t>::BeachLinePoint::get_x(const float_t y0, const vec<vec2
 	const vec2<float_t> l = sites[left_site], r = sites[right_site];
 	const vec2<float_t> s0 = l ^ r;
 	const vec2<float_t> conn = s0 - l;
-	if (abs(conn.y) < eps)
+	if (std::abs(conn.y) < eps)
 		return s0.x;
 	const float_t a2 = conn.len2();
 	const vec2<float_t> v = -conn.get_lrot();

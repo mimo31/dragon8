@@ -102,7 +102,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 					ind = i;
 				}
 			}
-			unsigned char shade = 255 / state.size() * ind;
+			unsigned char shade = 255 * ind / state.size();
 			img(x, y, 0) = shade;
 			img(x, y, 1) = shade;
 			img(x, y, 2) = shade;
