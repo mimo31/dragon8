@@ -65,7 +65,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 	img.save(filename.c_str());
 }
 
-void write_image(const ShapePtr shape, const PointsState& state, const std::string& filename, const double circ_rad, const std::vector<vec2d>& pots)
+void write_image(const ShapePtr shape, const PointsState& state, const std::string& filename, const double circ_rad, const std::vector<vec2d>& pots, const vec<std::pair<vec2d, vec2d>> &edges)
 {
 	using namespace cimg_library;
 
@@ -82,6 +82,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 
 	const unsigned char pcol[] = { 0, 0, 255 };
 	const unsigned char potcol[] = { 255, 0, 0 };
+	const unsigned char edgecol[] = { 0, 255, 0 };
 	const unsigned char circcol[] = { 247, 255, 247 };
 	const unsigned char circline[] = { 0, 191, 0 };
 
@@ -124,6 +125,13 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 	{
 		const point p = resc.map(v).get_rounded();
 		img.draw_circle(p.x, p.y, pr, potcol, 1.0);
+	}
+
+	for (const auto e : edges)
+	{
+		const point p0 = resc.map(e.first).get_rounded();
+		const point p1 = resc.map(e.second).get_rounded();
+		img.draw_line(p0.x, p0.y, p1.x, p1.y, edgecol, 1.0);
 	}
 	
 

@@ -323,7 +323,7 @@ PointsState MinDistSolver::solve() const
 		//cout << "moving to " << frt.furthest << endl;
 
 		if (i && i % 512 == 0)
-			write_image(shape, ps, "fortune" + std::to_string(i) + ".png", 0, frt.pots);
+			write_image(shape, ps, "fortune" + std::to_string(i) + ".png", 0, frt.pots, {});
 	}
 
 	return ps;

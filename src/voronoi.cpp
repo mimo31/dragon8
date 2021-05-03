@@ -52,6 +52,7 @@ void Voronoi<float_t>::init_compute()
 	for (uint32_t i = 0; i < first_sites.size() - 1; i++)
 	{
 		put_before(-1, first_sites[i], first_sites[i + 1]);
+		submit_infinite_vertex(first_sites[i + 1], first_sites[i]);
 	}
 	while (!events.empty())
 	{
@@ -101,8 +102,8 @@ void Voronoi<float_t>::init_compute()
 				root_id = 0;
 				most_left_id = 0;
 				most_right_id = 1;
-				sites_to_ind[PointSiteData(site0, site_id)] = 0;
-				sites_to_ind[PointSiteData(site_id, site0)] = 1;
+				sites_to_ind[SitePair(site0, site_id)] = 0;
+				sites_to_ind[SitePair(site_id, site0)] = 1;
 				if (do_checks)
 					check_beach_line();
 			}
@@ -111,7 +112,7 @@ void Voronoi<float_t>::init_compute()
 		{
 			if (print_info)
 				cout << "vertex event between sites " << event.left_site << ", " << event.rem_site << ", " << event.right_site << endl;
-			auto p0it = sites_to_ind.find(PointSiteData(event.left_site, event.rem_site));
+			auto p0it = sites_to_ind.find(SitePair(event.left_site, event.rem_site));
 			if (p0it == sites_to_ind.end())
 				continue;
 			
@@ -119,7 +120,7 @@ void Voronoi<float_t>::init_compute()
 			const uint32_t right_point_id = beach_line_points[left_point_id].right_neighbor_id;
 			if (beach_line_points[right_point_id].right_site != event.right_site)
 				continue;
-			submit_vertex(event.left_site, event.rem_site, event.right_site);
+			submit_finite_vertex(event.left_site, event.rem_site, event.right_site);
 			const int32_t rr_point_id = beach_line_points[right_point_id].right_neighbor_id;
 			erase(left_point_id);
 			erase(right_point_id);
@@ -133,6 +134,99 @@ void Voronoi<float_t>::init_compute()
 				check_beach_line();
 		}
 	}
+	int32_t next_id = most_left_id;
+	while (next_id != -1)
+	{
+		const BeachLinePoint &point = beach_line_points[next_id];
+		submit_infinite_vertex(point.left_site, point.right_site);
+		next_id = point.right_neighbor_id;
+	}
+	construct_graph();
+}
+
+template<typename float_t>
+void Voronoi<float_t>::construct_graph()
+{
+	cout << "constructing graph" << endl;
+
+	graph_vertices = vec<VoronoiVertex>(submitted_vertices.size());
+	graph_cells = vec<VoronoiCell>(sites.size());
+
+	std::unordered_map<SitePair, uint32_t> preedges;
+	const auto add_edge_to_vertex = [this](const uint32_t e, const uint32_t v)
+	{
+		VoronoiVertex &vert = graph_vertices[v];
+		if (vert.edge0 == VoronoiVertex::edge_unknown)
+			vert.edge0 = e;
+		else if (vert.edge1 == VoronoiVertex::edge_unknown)
+			vert.edge1 = e;
+		else
+			vert.edge2 = e;
+	};
+	const auto process_site_pair = [&add_edge_to_vertex, &preedges, this](const uint32_t v, const int32_t s0, const int32_t s1)
+	{
+		const SitePair pai(std::min(s0, s1), std::max(s0, s1));
+		if (preedges.find(pai) == preedges.end())
+			preedges[pai] = v;
+		else
+		{
+			add_edge_to_vertex(graph_edges.size(), preedges[pai]);
+			add_edge_to_vertex(graph_edges.size(), v);
+			graph_edges.push_back(VoronoiEdge(preedges[pai], v, s0, s1));
+			if (s0 != -1)
+				graph_cells[s0].edges.push_back(graph_edges.size() - 1);
+			if (s1 != -1)
+				graph_cells[s1].edges.push_back(graph_edges.size() - 1);
+			preedges.erase(pai);
+		}
+	};
+
+	for (size_t i = 0; i < graph_vertices.size(); i++)
+	{
+		graph_vertices[i] = VoronoiVertex(submitted_vertices[i]);
+		const int32_t s0 = graph_vertices[i].site0, s1 = graph_vertices[i].site1, s2 = graph_vertices[i].site2;
+		process_site_pair(i, s0, s1);
+		process_site_pair(i, s1, s2);
+		process_site_pair(i, s2, s0);
+		if (s0 != -1)
+			graph_cells[s0].vertices.push_back(i);
+		graph_cells[s1].vertices.push_back(i);
+		graph_cells[s2].vertices.push_back(i);
+	}
+
+	assert(preedges.empty());
+
+	for (VoronoiCell &cell : graph_cells)
+	{
+		std::unordered_map<uint32_t, std::pair<int32_t, int32_t>> neis;
+		const auto add_conn = [&neis](const uint32_t v_from, const uint32_t e)
+		{
+			if (neis.find(v_from) == neis.end())
+				neis[v_from] = std::make_pair(e, -1);
+			else
+				neis[v_from].second = e;
+		};
+		for (const uint32_t e : cell.edges)
+		{
+			add_conn(graph_edges[e].v0, e);
+			add_conn(graph_edges[e].v1, e);
+		}
+		const uint32_t start_v = cell.vertices[0];
+		cell.vertices.clear();
+		cell.edges.clear();
+		uint32_t next_v = start_v;
+		int32_t last_e = -1;
+		do
+		{
+			cell.vertices.push_back(start_v);
+			const uint32_t next_e = neis[next_v].first == last_e ? neis[next_v].second : neis[next_v].first;
+			cell.edges.push_back(next_e);
+			last_e = next_e;
+			next_v = graph_edges[next_e].v0 == next_v ? graph_edges[next_e].v1 : graph_edges[next_e].v0;
+		} while (next_v != start_v);	
+	}
+
+	cout << "graph constructed" << endl;
 }
 
 template<typename float_t>
@@ -158,7 +252,7 @@ void Voronoi<float_t>::put_before(const int32_t before_id, const uint32_t left_s
 	{
 		beach_line_points.push_back(BeachLinePoint(left_site, right_site, -1, -1, -1, -1, -1, 0));
 		root_id = most_left_id = most_right_id = 0;
-		sites_to_ind[PointSiteData(left_site, right_site)] = 0;
+		sites_to_ind[SitePair(left_site, right_site)] = 0;
 		if (do_checks)
 			check_beach_line_data_structure();
 		return;
@@ -201,7 +295,7 @@ void Voronoi<float_t>::put_before(const int32_t before_id, const uint32_t left_s
 	beach_line_points.push_back(BeachLinePoint(left_site, right_site, -1, -1, parent_id, left_neighbor_id, before_id, 0));
 
 	rotate_upward(parent_id);
-	sites_to_ind[PointSiteData(left_site, right_site)] = new_id;
+	sites_to_ind[SitePair(left_site, right_site)] = new_id;
 
 	if (do_checks)
 		check_beach_line_data_structure();
@@ -404,7 +498,7 @@ void Voronoi<float_t>::erase(const uint32_t point_id)
 		}
 	}
 	
-	const auto it = sites_to_ind.find(PointSiteData(point.left_site, point.right_site));
+	const auto it = sites_to_ind.find(SitePair(point.left_site, point.right_site));
 	sites_to_ind.erase(it);
 	
 	if (do_checks)
@@ -525,7 +619,7 @@ void Voronoi<float_t>::check_map_structure() const
 	std::fill(visited.begin(), visited.end(), false);
 	for (const auto &entry : sites_to_ind)
 	{
-		const PointSiteData site_data = entry.first;
+		const SitePair site_data = entry.first;
 		const uint32_t ind = entry.second;
 		assert(ind < beach_line_points.size());
 		const BeachLinePoint &point = beach_line_points[ind];
@@ -607,18 +701,53 @@ void Voronoi<float_t>::potential_add_vertex_event(const uint32_t left_id, const 
 }
 
 template<typename float_t>
-void Voronoi<float_t>::submit_vertex(const uint32_t site0_id, const uint32_t site1_id, const uint32_t site2_id)
+void Voronoi<float_t>::submit_finite_vertex(const uint32_t site0_id, const uint32_t site1_id, const uint32_t site2_id)
 {
-	vertices.push_back(VoronoiVertex(site0_id, site1_id, site2_id));	
+	submitted_vertices.push_back(PlainVertex(site0_id, site1_id, site2_id));	
 }
 
 template<typename float_t>
-vec<vec2<float_t>> Voronoi<float_t>::get_vertices() const
+void Voronoi<float_t>::submit_infinite_vertex(const uint32_t left_site, const uint32_t right_site)
+{
+	submitted_vertices.push_back(PlainVertex(-1, left_site, right_site));	
+}
+
+template<typename float_t>
+ProjectiveVertex<float_t> Voronoi<float_t>::get_projective_vertex(const VoronoiVertex &v) const
+{
+	if (v.site0 == -1)
+		return ProjectiveVertex<float_t>(true, (sites[v.site1] - sites[v.site2]).get_lrot());
+	return ProjectiveVertex<float_t>(false, circumc(sites[v.site0], sites[v.site1], sites[v.site2]));
+}
+
+template<typename float_t>
+vec<ProjectiveVertex<float_t>> Voronoi<float_t>::get_vertices() const
+{
+	vec<ProjectiveVertex<float_t>> verts;
+	verts.reserve(graph_vertices.size());
+	for (const VoronoiVertex &v : graph_vertices)
+		verts.push_back(get_projective_vertex(v));
+	return verts;
+}
+
+template<typename float_t>
+vec<ProjectiveEdge<float_t>> Voronoi<float_t>::get_edges() const
+{
+	vec<ProjectiveEdge<float_t>> edges;
+	edges.reserve(graph_edges.size());
+	for (const VoronoiEdge &e : graph_edges)
+		edges.push_back(ProjectiveEdge<float_t>(get_projective_vertex(graph_vertices[e.v0]), get_projective_vertex(graph_vertices[e.v1])));
+	return edges;
+}
+
+template<typename float_t>
+vec<vec2<float_t>> Voronoi<float_t>::get_finite_vertices() const
 {
 	vec<vec2<float_t>> verts;
-	verts.reserve(vertices.size());
-	for (const VoronoiVertex &v : vertices)
-		verts.push_back(circumc(sites[v.site0], sites[v.site1], sites[v.site2]));
+	verts.reserve(graph_vertices.size());
+	for (const VoronoiVertex &v : graph_vertices)
+		if (v.site0 != -1)
+			verts.push_back(circumc(sites[v.site0], sites[v.site1], sites[v.site2]));
 	return verts;
 }
 

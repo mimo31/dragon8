@@ -19,18 +19,18 @@
 namespace dragon8
 {
 
-struct PointSiteData
+struct SitePair
 {
 	uint32_t left_site;
 	uint32_t right_site;
 
-	PointSiteData() = default;
+	SitePair() = default;
 
-	PointSiteData(const uint32_t left_site, const uint32_t right_site) : left_site(left_site), right_site(right_site)
+	SitePair(const uint32_t left_site, const uint32_t right_site) : left_site(left_site), right_site(right_site)
 	{
 	}
 
-	bool operator==(const PointSiteData &other) const
+	bool operator==(const SitePair &other) const
 	{
 		return left_site == other.left_site && right_site == other.right_site;
 	}
@@ -41,9 +41,9 @@ struct PointSiteData
 namespace std
 {
 	template<>
-	struct hash<dragon8::PointSiteData>
+	struct hash<dragon8::SitePair>
 	{
-		size_t operator()(const dragon8::PointSiteData &site_data) const
+		size_t operator()(const dragon8::SitePair &site_data) const
 		{
 			return (((71 * size_t(site_data.left_site)) << 32) + 127 * site_data.right_site);
 		}
@@ -52,6 +52,30 @@ namespace std
 
 namespace dragon8
 {
+
+template<typename float_t>
+struct ProjectiveVertex
+{
+	bool at_infinity;
+	vec2<float_t> v;
+
+	ProjectiveVertex() = default;
+	ProjectiveVertex(const bool at_infinity, const vec2<float_t> v) : at_infinity(at_infinity), v(v)
+	{
+	}
+
+};
+
+template<typename float_t>
+struct ProjectiveEdge
+{
+	ProjectiveVertex<float_t> v0, v1;
+
+	ProjectiveEdge() = default;
+	ProjectiveEdge(const ProjectiveVertex<float_t> &v0, const ProjectiveVertex<float_t> &v1) : v0(v0), v1(v1)
+	{
+	}
+};
 
 template<typename float_t>
 struct FurthestPointData
@@ -96,7 +120,7 @@ private:
 	int32_t most_left_id = -1;
 	int32_t most_right_id = -1;
 	vec<BeachLinePoint> beach_line_points;
-	std::unordered_map<PointSiteData, uint32_t> sites_to_ind;
+	std::unordered_map<SitePair, uint32_t> sites_to_ind;
 
 	/**
 	 * @param search_x value of x to search for in the beach line
@@ -144,8 +168,6 @@ private:
 
 	void potential_add_vertex_event(uint32_t left_id, uint32_t rem_id, uint32_t right_id);
 
-	void submit_vertex(uint32_t site0_id, uint32_t site1_id, uint32_t site2_id);
-
 	void print_beach_line() const;
 
 	void check_tree_structure() const;
@@ -159,18 +181,70 @@ private:
 	void check_beach_line_content() const;
 	void check_beach_line() const;
 
-	struct VoronoiVertex
+	struct PlainVertex
 	{
-		uint32_t site0, site1, site2;
+		int32_t site0;
+		uint32_t site1, site2;
 
-		VoronoiVertex() = default;
+		PlainVertex() = default;
 
-		VoronoiVertex(const uint32_t site0, const uint32_t site1, const uint32_t site2) : site0(site0), site1(site1), site2(site2)
+		PlainVertex(const int32_t site0, const uint32_t site1, const uint32_t site2) : site0(site0), site1(site1), site2(site2)
 		{
 		}
 	};
 
-	vec<VoronoiVertex> vertices;
+	vec<PlainVertex> submitted_vertices;
+
+	void submit_finite_vertex(uint32_t site0_id, uint32_t site1_id, uint32_t site2_id);
+	void submit_infinite_vertex(uint32_t left_site, uint32_t right_site);
+
+	struct VoronoiVertex
+	{
+		int32_t site0;
+		uint32_t site1, site2;
+		static constexpr uint32_t edge_unknown = UINT32_MAX;
+		uint32_t edge0, edge1, edge2;
+
+		VoronoiVertex() = default;
+
+		VoronoiVertex(const PlainVertex &plain)
+			: site0(plain.site0), site1(plain.site1), site2(plain.site2), edge0(edge_unknown), edge1(edge_unknown), edge2(edge_unknown)
+		{
+		}
+
+		VoronoiVertex(const int32_t site0, const uint32_t site1, const uint32_t site2)
+			: site0(site0), site1(site1), site2(site2), edge0(edge_unknown), edge1(edge_unknown), edge2(edge_unknown)
+		{
+		}
+	};
+
+	vec<VoronoiVertex> graph_vertices;
+
+	ProjectiveVertex<float_t> get_projective_vertex(const VoronoiVertex &v) const;
+
+	struct VoronoiEdge
+	{
+		uint32_t v0, v1;
+		int32_t site0, site1;
+
+		VoronoiEdge() = default;
+
+		VoronoiEdge(const uint32_t v0, const uint32_t v1, const int32_t site0, const int32_t site1) : v0(v0), v1(v1), site0(site0), site1(site1)
+		{
+		}
+	};
+
+	vec<VoronoiEdge> graph_edges;
+
+	struct VoronoiCell
+	{
+		vec<uint32_t> vertices;
+		vec<uint32_t> edges;
+	};
+
+	vec<VoronoiCell> graph_cells;
+
+	void construct_graph();
 
 public:
 	Voronoi(ShapePtr container);
@@ -178,7 +252,9 @@ public:
 	void init_compute();
 	void add_site(vec2<float_t> p);
 	void remove_site(uint32_t i);
-	vec<vec2<float_t>> get_vertices() const;
+	vec<ProjectiveVertex<float_t>> get_vertices() const;
+	vec<ProjectiveEdge<float_t>> get_edges() const;
+	vec<vec2<float_t>> get_finite_vertices() const;
 	FurthestPointData<float_t> get_furthest() const;
 };
 

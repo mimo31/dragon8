@@ -94,23 +94,39 @@ void Tester::test_voronoi()
 	std::random_device dev;
 	std::mt19937 rgen(dev());
 	
-	const PointsState st = unit_square->gen_state(1000, rgen);
+	//const PointsState st = unit_square->gen_state(100, rgen);
 	/*for (const vec2d p : st)
 		cout << p << endl;
 	*/
 	//const PointsState st({ vec2d(0.460016, 0.802885), vec2d(0.14821, 0.672051), vec2d(0.77762, 0.170662), vec2d(0.958275, 0.894059) });
 	//const PointsState st({ vec2d(0.4, 0.4), vec2d(0.4, 0.6), vec2d(0.6, 0.4), vec2d(0.6, 0.6) });
-	/*PointsState st;
+	PointsState st;
 	constexpr int w = 10, h = 10;
 	for (int i = 0; i < w; i++)
 	{
 		for (int j = 0; j < h; j++)
 			st.push_back(vec2d((i + .5) / (2 * w) + .25, (j + .5) / (2 * h) + .25));
-	}*/
+	}
 	Voronoi<double> voron1(nullptr);
 	voron1.init_sites(st);
 	voron1.init_compute();
-	write_image(ShapePtr(unit_square), st, "voronoi_test.png", 0, voron1.get_vertices());
+	const vec<ProjectiveEdge<double>> raw_edges = voron1.get_edges();
+	vec<std::pair<vec2d, vec2d>> realized_edges;
+	for (const ProjectiveEdge<double> e : raw_edges)
+	{
+		if (e.v0.at_infinity && e.v1.at_infinity)
+			continue;
+		if (!e.v0.at_infinity && !e.v1.at_infinity)
+		{
+			realized_edges.push_back(std::make_pair(e.v0.v, e.v1.v));
+			continue;
+		}
+		vec2d p = e.v0.v, v = e.v1.v;
+		if (e.v0.at_infinity)
+			std::swap(p, v);
+		realized_edges.push_back(std::make_pair(p, p + v.get_unit() * 2));
+	}
+	write_image(ShapePtr(unit_square), st, "voronoi_test.png", 0, voron1.get_finite_vertices(), realized_edges);
 }
 
 void Tester::run_tests()
