@@ -13,9 +13,11 @@
 #include "CImg.h"
 
 #include "points-state.hpp"
+#include "projective.hpp"
 #include "rectangle2d.hpp"
 #include "rectangle2i.hpp"
 #include "rescaling.hpp"
+#include "vec.hpp"
 #include "vec2.hpp"
 
 #include "test/test.hpp"
@@ -36,6 +38,7 @@ public:
 	virtual vec2d bound(const vec2d vfrom, const vec2d vto) const = 0;
 	virtual rectangle2d get_box() const = 0;
 	virtual Rescaling draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const = 0; // a transformation of internal coordinates to image coordinates
+	virtual vec<vec2d> get_intersections(const ProjectiveEdge<double> &edge) const = 0;
 };
 
 typedef std::shared_ptr<Shape> ShapePtr;
@@ -53,12 +56,13 @@ public:
 	vec2d bound(const vec2d vfrom, const vec2d vto) const override;
 	rectangle2d get_box() const override;
 	Rescaling draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const override;
+	vec<vec2d> get_intersections(const ProjectiveEdge<double> &edge) const override;
 };
 
 class ShapePolygon : public Shape
 {
 private:
-	std::vector<vec2d> verts;
+	vec<vec2d> verts;
 
 public:
 	ShapePolygon(const std::vector<vec2d>& verts);
@@ -68,6 +72,7 @@ public:
 	vec2d bound(const vec2d vfrom, const vec2d vto) const override;
 	rectangle2d get_box() const override;
 	Rescaling draw(cimg_library::CImg<unsigned char>& img, const rectangle2i box) const override;
+	vec<vec2d> get_intersections(const ProjectiveEdge<double> &edge) const override;
 };
 
 }

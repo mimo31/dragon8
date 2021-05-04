@@ -29,8 +29,8 @@ void Voronoi<float_t>::init_sites(const vec<vec2<float_t>> &sites)
 	this->sites = sites;
 }
 
-constexpr bool print_info = true;
-constexpr bool do_checks = true;
+constexpr bool print_info = false;
+constexpr bool do_checks = false;
 
 template<typename float_t>
 void Voronoi<float_t>::init_compute()
@@ -147,7 +147,8 @@ void Voronoi<float_t>::init_compute()
 template<typename float_t>
 void Voronoi<float_t>::construct_graph()
 {
-	cout << "constructing graph" << endl;
+	if (print_info)
+		cout << "constructing graph" << endl;
 
 	graph_vertices = vec<VoronoiVertex>(submitted_vertices.size());
 	graph_cells = vec<VoronoiCell>(sites.size());
@@ -225,8 +226,8 @@ void Voronoi<float_t>::construct_graph()
 			next_v = graph_edges[next_e].v0 == next_v ? graph_edges[next_e].v1 : graph_edges[next_e].v0;
 		} while (next_v != start_v);	
 	}
-
-	cout << "graph constructed" << endl;
+	if (print_info)
+		cout << "graph constructed" << endl;
 }
 
 template<typename float_t>
@@ -749,6 +750,49 @@ vec<vec2<float_t>> Voronoi<float_t>::get_finite_vertices() const
 		if (v.site0 != -1)
 			verts.push_back(circumc(sites[v.site0], sites[v.site1], sites[v.site2]));
 	return verts;
+}
+
+template<typename float_t>
+FurthestPointData<float_t> Voronoi<float_t>::get_furthest() const
+{
+	FurthestPointData<float_t> current_best;
+	current_best.dist2 = -1;
+	for (const VoronoiVertex &v : graph_vertices)
+	{
+		if (v.site0 == -1)
+			continue;
+		const ProjectiveVertex<float_t> pv = get_projective_vertex(v);
+		if (!container->is_inside(pv.v))
+			continue;
+		const vec2d sit = sites[v.site0];
+		const double dist2 = (pv.v - sit).len2();
+		if (dist2 > current_best.dist2)
+		{
+			current_best.dist2 = dist2;
+			current_best.point = pv.v;
+		}
+	}
+	assert(current_best.point.inside(-1, -1, 2, 2));
+	for (const VoronoiEdge &e : graph_edges)
+	{
+		if (graph_vertices[e.v0].site0 == -1 && graph_vertices[e.v1].site0 == -1)
+			continue;
+		const ProjectiveEdge<float_t> pe(get_projective_vertex(graph_vertices[e.v0]), get_projective_vertex(graph_vertices[e.v1]));
+		const vec<vec2d> inters = container->get_intersections(pe);
+		for (const vec2d intr : inters)
+		{
+			assert(intr.inside(-1, -1, 2, 2));
+			const vec2d sit = sites[e.site0];
+			const double dist2 = (intr - sit).len2();
+			if (dist2 > current_best.dist2)
+			{
+				current_best.dist2 = dist2;
+				current_best.point = intr;
+			}
+		}
+	}
+	assert(current_best.point.inside(-1, -1, 2, 2));
+	return current_best;
 }
 
 template<typename float_t>

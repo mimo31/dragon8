@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "application.hpp"
+#include "evaluator.hpp"
 #include "graphics.hpp"
 #include "shape.hpp"
 #include "voronoi.hpp"
@@ -83,39 +84,20 @@ void Tester::test_all()
 	test_to_nneg_int();
 }
 
-void Tester::test_voronoi()
+void draw_voronoi(const PointsState &points, const ShapePtr container, const std::string &filename)
 {
-	Voronoi<double> voronoi(nullptr);
-	/*const vec<vec2<double>> sites0({ vec2<double>(0, 0), vec2<double>(1, 1), vec2<double>(4, 3) });
-	voronoi.init_sites(sites0);
-	voronoi.init_compute();*/
-	const std::vector<vec2d> verts{ vec2d(0, 0), vec2d(1, 0), vec2d(1, 1), vec2d(0, 1) };
-	const ShapePtr unit_square = std::make_shared<ShapePolygon>(verts);// unit_square(verts);
-	std::random_device dev;
-	std::mt19937 rgen(dev());
-	
-	//const PointsState st = unit_square->gen_state(100, rgen);
-	/*for (const vec2d p : st)
-		cout << p << endl;
-	*/
-	//const PointsState st({ vec2d(0.460016, 0.802885), vec2d(0.14821, 0.672051), vec2d(0.77762, 0.170662), vec2d(0.958275, 0.894059) });
-	//const PointsState st({ vec2d(0.4, 0.4), vec2d(0.4, 0.6), vec2d(0.6, 0.4), vec2d(0.6, 0.6) });
-	PointsState st;
-	constexpr int w = 10, h = 10;
-	for (int i = 0; i < w; i++)
-	{
-		for (int j = 0; j < h; j++)
-			st.push_back(vec2d((i + .5) / (2 * w) + .25, (j + .5) / (2 * h) + .25));
-	}
-	Voronoi<double> voron1(nullptr);
-	voron1.init_sites(st);
+	Voronoi<double> voron1(container);
+	voron1.init_sites(points);
 	voron1.init_compute();
 	const vec<ProjectiveEdge<double>> raw_edges = voron1.get_edges();
 	vec<std::pair<vec2d, vec2d>> realized_edges;
+	vec<vec2d> extended_vertices = voron1.get_finite_vertices();
 	for (const ProjectiveEdge<double> e : raw_edges)
 	{
 		if (e.v0.at_infinity && e.v1.at_infinity)
 			continue;
+		const vec<vec2d> inters = container->get_intersections(e);
+		extended_vertices.insert(extended_vertices.end(), inters.begin(), inters.end());
 		if (!e.v0.at_infinity && !e.v1.at_infinity)
 		{
 			realized_edges.push_back(std::make_pair(e.v0.v, e.v1.v));
@@ -126,7 +108,69 @@ void Tester::test_voronoi()
 			std::swap(p, v);
 		realized_edges.push_back(std::make_pair(p, p + v.get_unit() * 2));
 	}
-	write_image(ShapePtr(unit_square), st, "voronoi_test.png", 0, voron1.get_finite_vertices(), realized_edges);
+	write_image(container, points, filename, 0, extended_vertices, realized_edges);
+}
+
+void Tester::test_voronoi()
+{
+	Voronoi<double> voronoi(nullptr);
+	/*const vec<vec2<double>> sites0({ vec2<double>(0, 0), vec2<double>(1, 1), vec2<double>(4, 3) });
+	voronoi.init_sites(sites0);
+	voronoi.init_compute();*/
+	const std::vector<vec2d> verts{ vec2d(0, 0), vec2d(1, 0), vec2d(1, 1), vec2d(0, 1) };
+	//const ShapePtr shape = std::make_shared<ShapeCircle>(1);
+	const ShapePtr shape = std::make_shared<ShapePolygon>(verts);
+	std::random_device dev;
+	std::mt19937 rgen(dev());
+	
+	constexpr uint32_t point_count = 10;
+	/*for (const vec2d p : st)
+		cout << p << endl;
+	*/
+	//const PointsState st({ vec2d(0.460016, 0.802885), vec2d(0.14821, 0.672051), vec2d(0.77762, 0.170662), vec2d(0.958275, 0.894059) });
+	//const PointsState st({ vec2d(0.4, 0.4), vec2d(0.4, 0.6), vec2d(0.6, 0.4), vec2d(0.6, 0.6) });
+	/*PointsState st;
+	constexpr int w = 10, h = 10;
+	for (int i = 0; i < w; i++)
+	{
+		for (int j = 0; j < h; j++)
+			st.push_back(vec2d((i + .5) / (2 * w) + .25, (j + .5) / (2 * h) + .25));
+	}*/
+	std::uniform_int_distribution<> index_dist(0, point_count - 1);
+	constexpr uint32_t tries = UINT32_MAX;
+	constexpr uint32_t iterations = 4096;
+	PointsState best_state = shape->gen_state(point_count, rgen);
+	double best_score = MinDistEvaluator().evalv(best_state);
+	for (uint32_t tr = 0; tr < tries; tr++)
+	{
+		PointsState st = shape->gen_state(point_count, rgen);
+		for (uint32_t i = 0; i < iterations; i++)
+		{
+			const uint32_t move_index = index_dist(rgen);
+			std::swap(st[move_index], st.back());
+			st.pop_back();
+			Voronoi<double> voron1(shape);
+			voron1.init_sites(st);
+			voron1.init_compute();
+			const vec2d to_add = voron1.get_furthest().point;
+			//cout << "adding " << to_add << endl;
+			st.push_back(to_add);
+			/*if (i % 32 == 0)
+			{
+				cout << "drawing " << i << endl;
+				draw_voronoi(st, shape, "alg_test" + std::to_string(i) + ".png");
+			}*/
+		}
+		const double score = MinDistEvaluator().evalv(st);
+		cout << "try " << tr << '\n';
+		cout << "score = " << score << ", best = " << best_score << endl;
+		if (score > best_score)
+		{
+			best_score = score;
+			best_state = st;
+			draw_voronoi(best_state, shape, "test_found.png");
+		}
+	}
 }
 
 void Tester::run_tests()

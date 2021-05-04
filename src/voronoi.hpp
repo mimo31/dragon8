@@ -12,6 +12,7 @@
 #include <set>
 
 #include "print.hpp"
+#include "projective.hpp"
 #include "shape.hpp"
 #include "vec.hpp"
 #include "vec2.hpp"
@@ -54,36 +55,14 @@ namespace dragon8
 {
 
 template<typename float_t>
-struct ProjectiveVertex
-{
-	bool at_infinity;
-	vec2<float_t> v;
-
-	ProjectiveVertex() = default;
-	ProjectiveVertex(const bool at_infinity, const vec2<float_t> v) : at_infinity(at_infinity), v(v)
-	{
-	}
-
-};
-
-template<typename float_t>
-struct ProjectiveEdge
-{
-	ProjectiveVertex<float_t> v0, v1;
-
-	ProjectiveEdge() = default;
-	ProjectiveEdge(const ProjectiveVertex<float_t> &v0, const ProjectiveVertex<float_t> &v1) : v0(v0), v1(v1)
-	{
-	}
-};
-
-template<typename float_t>
 struct FurthestPointData
 {
 	vec2<float_t> point;
-	float_t dist;
+	float_t dist2;
 
-	FurthestPointData(const vec2<float_t> point, const float_t dist) : point(point), dist(dist)
+	FurthestPointData() = default;
+
+	FurthestPointData(const vec2<float_t> point, const float_t dist2) : point(point), dist2(dist2)
 	{
 	}
 };

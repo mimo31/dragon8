@@ -86,6 +86,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 	const unsigned char circcol[] = { 247, 255, 247 };
 	const unsigned char circline[] = { 0, 191, 0 };
 
+	/*
 	for (uint32_t y = ybrd; y < h - ybrd; y++)
 	{
 		for (uint32_t x = xbrd; x < w - xbrd; x++)
@@ -108,7 +109,7 @@ void write_image(const ShapePtr shape, const PointsState& state, const std::stri
 			img(x, y, 1) = shade;
 			img(x, y, 2) = shade;
 		}
-	}
+	}*/
 
 	for (const vec2d v : state)
 	{

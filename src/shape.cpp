@@ -89,6 +89,58 @@ Rescaling ShapeCircle::draw(cimg_library::CImg<unsigned char>& img, const rectan
 	return Rescaling(sc, sc, center);
 }
 
+vec<vec2d> ShapeCircle::get_intersections(const ProjectiveEdge<double> &edge) const
+{
+	const bool finite = !edge.v0.at_infinity && !edge.v1.at_infinity;
+	vec2d p, dir;
+	if (finite)
+	{
+		p = edge.v0.v;
+		dir = edge.v1.v - p;
+	}
+	else
+	{
+		if (edge.v0.at_infinity)
+		{
+			p = edge.v1.v;
+			dir = edge.v0.v;
+		}
+		else
+		{
+			p = edge.v0.v;
+			dir = edge.v1.v;
+		}
+	}
+	const double disc = p.dot(dir) * p.dot(dir) - dir.len2() * p.len2() + dir.len2() * r * r;
+	if (disc < 0)
+		return {};
+	vec<vec2d> res;
+	const auto submit_t = [&res, p, dir, finite](const double t)
+	{
+		if (finite)
+		{
+			if (t >= 0 && t <= 1)
+				res.push_back(p + t * dir);
+		}
+		else
+		{
+			if (t >= 0)
+				res.push_back(p + t * dir);
+		}
+	};
+	if (disc == 0)
+	{
+		const double t = -p.dot(dir) / dir.len2();
+		submit_t(t);
+		return res;
+	}
+	const double t0 = (-p.dot(dir) + sqrt(disc)) / dir.len2();
+	const double t1 = (-p.dot(dir) - sqrt(disc)) / dir.len2();
+	submit_t(t0);
+	submit_t(t1);
+	return res;
+}
+
 ShapePolygon::ShapePolygon(const std::vector<vec2d>& verts) : verts(verts)
 {
 }
@@ -243,6 +295,89 @@ Rescaling ShapePolygon::draw(cimg_library::CImg<unsigned char>& img, const recta
 	}
 	img.draw_polygon(points, white);
 	return resc;
+}
+
+vec<vec2d> ShapePolygon::get_intersections(const ProjectiveEdge<double> &edge) const
+{
+	// TODO implement
+	vec<vec2d> inters;
+	vec2d ep, edir;
+	const bool finite = !edge.v0.at_infinity && !edge.v1.at_infinity;
+	if (finite)
+	{
+		ep = edge.v0.v;
+		edir = edge.v1.v - edge.v0.v;
+	}
+	else
+	{
+		if (edge.v0.at_infinity)
+		{
+			ep = edge.v1.v;
+			edir = edge.v0.v;
+		}
+		else
+		{
+			ep = edge.v0.v;
+			edir = edge.v1.v;
+		}
+	}
+	for (uint32_t i = 0; i < verts.size(); i++)
+	{
+		const vec2d v0 = verts[i], v1 = i != verts.size() - 1 ? verts[i + 1] : verts[0];
+		const vec2d sdir = v1 - v0;
+		if (edir.cross(sdir) == 0 && (v0 - ep).cross(sdir) == 0)
+		{
+			double t0 = edir.dot(v0 - ep) / edir.len2();
+			double t1 = edir.dot(v1 - ep) / edir.len2();
+			if (t0 > t1)
+				std::swap(t0, t1);
+			if (finite)
+			{
+				if (0 <= t0 && t1 <= 1)
+				{
+					inters.push_back(ep + edir * t0);
+					inters.push_back(ep + edir * t1);
+				}
+				else if (t0 < 0 && 0 <= t1 && t1 <= 1)
+				{
+					inters.push_back(ep);
+					inters.push_back(ep + edir * t1);
+				}
+				else if (0 <= t0 && t0 <= 1 && 1 < t1)
+				{
+					inters.push_back(ep + edir * t0);
+					inters.push_back(ep + edir);
+				}
+				else
+				{
+					inters.push_back(ep);
+					inters.push_back(ep + edir);
+				}
+			}
+			else
+			{
+				if (t1 >= 0)
+				{
+					inters.push_back(ep + edir * t1);
+					if (t0 >= 0)
+						inters.push_back(ep + edir * t1);
+					else
+						inters.push_back(ep);
+				}
+			}
+		}
+		else
+		{
+			const double t = sdir.cross(v0 - ep) / sdir.cross(edir);
+			if (t < 0 || (finite && t > 1))
+				continue;
+			const double s = edir.cross(ep - v0) / edir.cross(sdir);
+			if (s < 0 || s > 1)
+				continue;
+			inters.push_back(ep + edir * t);
+		}
+	}
+	return inters;
 }
 
 }
