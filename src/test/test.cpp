@@ -6,6 +6,7 @@
  */
 #include "test.hpp"
 
+#include <cassert>
 #include <iostream>
 
 #include "application.hpp"
@@ -98,13 +99,13 @@ void draw_voronoi(const PointsState &points, const ShapePtr container, const std
 			continue;
 		const vec<vec2d> inters = container->get_intersections(e);
 		extended_vertices.insert(extended_vertices.end(), inters.begin(), inters.end());
-		if (!e.v0.at_infinity && !e.v1.at_infinity)
+		if (!e.v0.at_infinity && e.v0.v.len2() < 1e10 && !e.v1.at_infinity && e.v1.v.len2() < 1e10)
 		{
 			realized_edges.push_back(std::make_pair(e.v0.v, e.v1.v));
 			continue;
 		}
 		vec2d p = e.v0.v, v = e.v1.v;
-		if (e.v0.at_infinity)
+		if (e.v0.at_infinity || e.v0.v.len2() >= 1e10)
 			std::swap(p, v);
 		realized_edges.push_back(std::make_pair(p, p + v.get_unit() * 2));
 	}
@@ -123,7 +124,7 @@ void Tester::test_voronoi()
 	std::random_device dev;
 	std::mt19937 rgen(dev());
 	
-	constexpr uint32_t point_count = 10;
+	constexpr uint32_t point_count = 20;
 	/*for (const vec2d p : st)
 		cout << p << endl;
 	*/
@@ -137,8 +138,8 @@ void Tester::test_voronoi()
 			st.push_back(vec2d((i + .5) / (2 * w) + .25, (j + .5) / (2 * h) + .25));
 	}*/
 	std::uniform_int_distribution<> index_dist(0, point_count - 1);
-	constexpr uint32_t tries = UINT32_MAX;
-	constexpr uint32_t iterations = 4096;
+	constexpr uint32_t tries = 1;
+	constexpr uint32_t iterations = 20;
 	PointsState best_state = shape->gen_state(point_count, rgen);
 	double best_score = MinDistEvaluator().evalv(best_state);
 	for (uint32_t tr = 0; tr < tries; tr++)
@@ -168,7 +169,7 @@ void Tester::test_voronoi()
 		{
 			best_score = score;
 			best_state = st;
-			draw_voronoi(best_state, shape, "test_found.png");
+			draw_voronoi(st, shape, "test_found.png");
 		}
 	}
 }
